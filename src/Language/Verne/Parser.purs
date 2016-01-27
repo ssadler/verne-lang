@@ -16,6 +16,8 @@ import Text.Parsing.StringParser hiding (Pos(..))
 import Text.Parsing.StringParser.Combinators
 import Text.Parsing.StringParser.String
 
+import Debug.Trace
+
 import Language.Verne.Types
 
 getPos :: Parser Int
@@ -28,19 +30,21 @@ parseArgs = fix $ \_ -> do
                   parseArg
       sepTill = do
         arg <- get
+        traceAnyM arg
         case arg of
            a@(ATOM _ (Catch _)) -> pure (Cons a Nil)
            a                    -> do
              Cons a <$> 
                  (char ' ' *> skipSpaces *> sepTill <|> pure Nil)
-  fromList <$> sepTill <* skipSpaces
+  fromList <$> (sepTill <|> pure Nil) <* skipSpaces
 
 
+-- | this thing breaks the rules of not skipping spaces after itself.
 parseArg :: Parser (LISP Pos Atom)
 parseArg = codePos (parseAtom <|> parseParens)
   where
   parseParens = fix $ \_ -> do
-    args <- char '(' *> parseArgs <* char ')'
+    args <- char '(' *> skipSpaces *> parseArgs <* optional (char ')')
     pure $ flip LIST args
   parseAtom = do
     atom <- parseStr <|> parseName
@@ -86,7 +90,7 @@ checkSuccess :: LISP Pos Atom -> PosString -> ParseResult (LISP Pos Atom)
 checkSuccess a _ = dive a
   where
     dive (LIST _ arr) = case last arr of
-                            Nothing -> Partial a
+                            Nothing -> Success a
                             Just lisp -> dive lisp
     dive (ATOM _ (Catch _)) = Partial a
     dive (ATOM _ _        ) = Success a
