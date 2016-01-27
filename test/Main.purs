@@ -34,7 +34,7 @@ main = runTest do
 --  test "user error" do
 --    equal (Failure 0 "Could not match character (") (parse ")")
   test "just space" do
-    equal (Partial (LIST (Pos 1 1) [ATOM (Pos 1 1) (Catch EndOfInput)])) (parse " ")
+    equal (Success (LIST (Pos 1 1) [])) (parse " ")
   test "confuse the parser" do
     equal (Success (LIST (Pos 0 2) [ LIST (Pos 0 2) [ ATOM (Pos 1 2) (Name "a")]]))
           (parse "(a")
@@ -47,5 +47,5 @@ main = runTest do
     -- Yea it doesn't care about parens. It's forgiving. It should be, cope with it.
     equal (Success expected) (parse "a (b c")
   test "unit" $ do
-    equal (Success (LIST (Pos 0 2) [ LIST (Pos 0 2) [] ])) (parse " ( ) ")
+    equal (Success (LIST (Pos 1 5) [ LIST (Pos 1 4) [] ])) (parse " ( ) ")
     

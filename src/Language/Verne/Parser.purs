@@ -16,27 +16,15 @@ import Text.Parsing.StringParser hiding (Pos(..))
 import Text.Parsing.StringParser.Combinators
 import Text.Parsing.StringParser.String
 
-import Debug.Trace
-
 import Language.Verne.Types
+
 
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
 
 parseArgs :: Parser (Array (LISP Pos Atom))
-parseArgs = fix $ \_ -> do
-  let get = atEnd (codePos $ pure $ flip ATOM $ Catch EndOfInput)
-                  parseArg
-      sepTill = do
-        arg <- get
-        traceAnyM arg
-        case arg of
-           a@(ATOM _ (Catch _)) -> pure (Cons a Nil)
-           a                    -> do
-             Cons a <$> 
-                 (char ' ' *> skipSpaces *> sepTill <|> pure Nil)
-  fromList <$> (sepTill <|> pure Nil) <* skipSpaces
+parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
 
 -- | this thing breaks the rules of not skipping spaces after itself.
