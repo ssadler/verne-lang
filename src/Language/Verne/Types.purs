@@ -2,7 +2,7 @@ module Language.Verne.Types
   ( LISP(..)
   , Pos(..)
   , Atom(..)
-  , Error(..)
+  , ParseResult(..)
   ) where
 
 
@@ -10,6 +10,7 @@ import Data.Generic
 
 import Prelude
 
+import Text.Parsing.StringParser hiding (Pos(..))
 
 
 -- | Core syntax tree container
@@ -36,18 +37,14 @@ instance showPos :: Show Pos where show = gShow
 
 -- | Data definition
 --
-data Atom = Name String | Str String
+data Atom = Name String | Str String | Catch ParseError
 
 derive instance genericAtom :: Generic Atom
 instance eqAtom :: Eq Atom where eq = gEq
 instance showAtom :: Show Atom where show = gShow
 
+data ParseResult a = Success a | Partial a | Failure Int String
 
--- | Error container
---
-data Error = Error {err :: String, pos :: Int}
-
-derive instance genericError :: Generic Error
-instance eqError :: Eq Error where eq = gEq
-instance showError :: Show Error where show = gShow
-
+derive instance genericParseResult :: (Generic a) => Generic (ParseResult a)
+instance eqParseResult :: (Eq a, Generic a) => Eq (ParseResult a) where eq = gEq
+instance showParseResult :: (Show a, Generic a) => Show (ParseResult a) where show = gShow

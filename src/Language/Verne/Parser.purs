@@ -5,9 +5,9 @@ module Language.Verne.Parser
 import Control.Alt
 import Control.Apply
 
-import Data.Array ((:))
-import Data.Either
-import Data.List (fromList)
+import Data.Array (last)
+import Data.List (List(..), fromList)
+import Data.Maybe (Maybe(..))
 import Data.String (fromCharArray)
 
 import Prelude
@@ -25,15 +25,23 @@ getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
 parseArgs :: Parser (Array (LISP Pos Atom))
 parseArgs = fix $ \_ -> do
-  let out = fromList <$> sepBy1 parseArg (char ' ' *> skipSpaces)
-  out <* skipSpaces
+  let get = atEnd (codePos $ pure $ flip ATOM $ Catch EndOfInput)
+                  parseArg
+      sepTill = do
+          arg <- get
+          case arg of
+               a@(ATOM _ (Catch _)) -> pure (Cons a Nil)
+               a                    -> do
+                   char ' ' *> skipSpaces
+                   (Cons a <$> sepTill) <|> pure Nil
+  fromList <$> sepTill <* skipSpaces
 
 
 parseArg :: Parser (LISP Pos Atom)
 parseArg = codePos (parseParens <|> parseAtom)
   where
   parseParens = fix $ \_ -> do
-    args <- between (char '(') (char ')') parseArgs
+    args <- char '(' *> parseArgs <* atEnd (pure ' ') (char ')')
     pure $ flip LIST args
   parseAtom = do
     atom <- parseStr <|> parseName
@@ -44,7 +52,7 @@ parseName :: Parser Atom
 parseName = do
   a <- lowerCaseChar
   rest <- many myAlphaNum
-  pure $ Name $ fromCharArray $ a : fromList rest
+  pure $ Name $ fromCharArray $ fromList $ Cons a rest
   where
   myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
                 || c >= 'A' && c <= 'Z'
@@ -66,9 +74,20 @@ codePos p = do
   pure $ f $ Pos a b
 
 
-parse :: String -> Either Error (LISP Pos Atom)
-parse command = unParser parseCode {str: command, pos: 0} onErr onSucc
-  where onErr pos (ParseError err) = Left (Error {pos: pos, err: err})
-        onSucc result _ = Right result
-        parseCode = skipSpaces *> codePos (flip LIST <$> parseArgs)
+parse :: String -> ParseResult (LISP Pos Atom)
+parse input = do
+    unParser parseCode {str: input, pos: 0} onErr checkSuccess
+  where
+    onErr pos (ParseError err) = Failure pos err
+    onErr pos EndOfInput       = Failure pos "EndOfInput"
+    parseCode = skipSpaces *> codePos (flip LIST <$> parseArgs)
 
+
+checkSuccess :: LISP Pos Atom -> PosString -> ParseResult (LISP Pos Atom)
+checkSuccess a _ = dive a
+  where
+    dive (LIST _ arr) = case last arr of
+                            Nothing -> Partial a
+                            Just lisp -> dive lisp
+    dive (ATOM _ (Catch _)) = Partial a
+    dive (ATOM _ _        ) = Success a
