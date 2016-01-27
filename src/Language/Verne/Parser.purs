@@ -37,10 +37,10 @@ parseArgs = fix $ \_ -> do
 
 
 parseArg :: Parser (LISP Pos Atom)
-parseArg = codePos (parseParens <|> parseAtom)
+parseArg = codePos (parseAtom <|> parseParens)
   where
   parseParens = fix $ \_ -> do
-    args <- char '(' *> parseArgs <* atEnd (pure ' ') (char ')')
+    args <- char '(' *> parseArgs <* char ')'
     pure $ flip LIST args
   parseAtom = do
     atom <- parseStr <|> parseName

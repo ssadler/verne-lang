@@ -32,7 +32,10 @@ main = runTest do
                                    ]
     equal (Success expected) (parse "a (\"b\") (c d)")
   test "user error" do
-    equal (Failure 0 "Expected a lower case character but found ')'") (parse ")")
+    equal (Failure 0 "Could not match character (") (parse ")")
   test "just space" do
     equal (Partial (LIST (Pos 1 1) [ATOM (Pos 1 1) (Catch EndOfInput)])) (parse " ")
+  test "confuse the parser" do
+    --                                positions are wrong for EndOfInputs
+    equal (Partial (LIST (Pos 0 0) [ATOM (Pos 0 0) (Catch EndOfInput)])) (parse "(a")
     
