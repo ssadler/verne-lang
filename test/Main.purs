@@ -1,7 +1,6 @@
 module Test.Main where
 
 import Control.Monad.Aff.AVar (AVAR())
-
 import Control.Monad.Eff (Eff())
 
 import Prelude
@@ -9,6 +8,8 @@ import Prelude
 import Test.Unit (TIMER(), test, runTest)
 import Test.Unit.Assert
 import Test.Unit.Console (TESTOUTPUT())
+
+import Text.Parsing.StringParser hiding (Pos(..))
 
 import Language.Verne
 
@@ -31,6 +32,7 @@ main = runTest do
                                    ]
     equal (Success expected) (parse "a (\"b\") (c d)")
   test "user error" do
-    equal (Failure 1 "Expected a lower case character but found ')'") (parse ")")
+    equal (Failure 0 "Expected a lower case character but found ')'") (parse ")")
   test "just space" do
-    equal (Failure 1 "Unexpected EOF") (parse " ")
+    equal (Partial (LIST (Pos 1 1) [ATOM (Pos 1 1) (Catch EndOfInput)])) (parse " ")
+    

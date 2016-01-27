@@ -18,7 +18,6 @@ import Text.Parsing.StringParser.String
 
 import Language.Verne.Types
 
-
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
@@ -28,12 +27,12 @@ parseArgs = fix $ \_ -> do
   let get = atEnd (codePos $ pure $ flip ATOM $ Catch EndOfInput)
                   parseArg
       sepTill = do
-          arg <- get
-          case arg of
-               a@(ATOM _ (Catch _)) -> pure (Cons a Nil)
-               a                    -> do
-                   char ' ' *> skipSpaces
-                   (Cons a <$> sepTill) <|> pure Nil
+        arg <- get
+        case arg of
+           a@(ATOM _ (Catch _)) -> pure (Cons a Nil)
+           a                    -> do
+             Cons a <$> 
+                 (char ' ' *> skipSpaces *> sepTill <|> pure Nil)
   fromList <$> sepTill <* skipSpaces
 
 
