@@ -16,6 +16,7 @@
     "purescript-generics": "~0.7.1",
     "purescript-debug": "~0.1.3",
     "purescript-test-unit": "~4.1.0",
-    "purescript-string-parsers": "git@github.com:libscott/purescript-string-parsers.git#0d5ea9b"
+    "purescript-string-parsers": "git@github.com:libscott/purescript-string-parsers.git#0d5ea9b",
+    "purescript-maps": "~0.5.4"
   }
 }
