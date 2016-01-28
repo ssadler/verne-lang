@@ -13,7 +13,7 @@ import Test.Unit.Console (TESTOUTPUT())
 import Language.Verne
 
 
-foreign import registry :: TypeGraph
+foreign import ns :: Namespace
 
 --main :: forall e. Eff ( testOutput :: TESTOUTPUT
 --                      , avar :: AVAR
@@ -25,10 +25,10 @@ foreign import registry :: TypeGraph
 main = do
   let result = parse "sayHi"
       lisp = case result of Success l -> l
-      lispT = typeLisp registry "IO ()" lisp
+      lispT = typeLisp ns "IO ()" lisp
   print lispT
 
   let result = parse "setBackgroundColor \"#FFF\""
       lisp = case result of Success l -> l
-      lispT = typeLisp registry "IO ()" lisp
+      lispT = typeLisp ns "IO ()" lisp
   print lispT

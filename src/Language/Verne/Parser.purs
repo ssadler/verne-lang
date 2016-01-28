@@ -66,7 +66,7 @@ codePos p = do
 
 
 parse :: String -> ParseResult (LISP Pos Atom)
-parse input = do
+parse input =
     unParser parseCode {str: input, pos: 0} onErr checkSuccess
   where
     onErr pos (ParseError err) = Failure pos err
