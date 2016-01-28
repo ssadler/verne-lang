@@ -22,8 +22,13 @@ foreign import registry :: TypeGraph
 --                      ) Unit
 
 
-main =
+main = do
   let result = parse "sayHi"
       lisp = case result of Success l -> l
       lispT = typeLisp registry "IO ()" lisp
-  in print lispT
+  print lispT
+
+  let result = parse "setBackgroundColor \"#FFF\""
+      lisp = case result of Success l -> l
+      lispT = typeLisp registry "IO ()" lisp
+  print lispT

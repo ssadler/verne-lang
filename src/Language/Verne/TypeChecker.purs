@@ -19,6 +19,7 @@ import Data.StrMap
 import Debug.Trace (spy)
 
 import Language.Verne.Types
+import Language.Verne.Utils
 
 type Type = String
 
@@ -29,7 +30,8 @@ data LISP_T a = LIST_T Type Pos (Maybe Error) (Array (LISP_T a))
 
 derive instance genericLISP_T :: (Generic a) => Generic (LISP_T a)
 instance eqLISP_T :: (Generic a, Eq a) => Eq (LISP_T a) where eq = gEq
-instance showLISP_T :: (Generic a, Show a) => Show (LISP_T a) where show = gShow
+instance showLISP_T :: (Generic a, Show a) => Show (LISP_T a) where
+    show = compactShow <<< gShow
 
 
 data Component = Component { signature :: Array Type }
@@ -43,7 +45,7 @@ type TypeGraph = { componentByName :: StrMap Component
 -- todo: typed errors
 -- todo: component properties are extracted and verified at init time
 typeLisp :: TypeGraph -> Type -> LISP Pos Atom -> LISP_T Atom
-typeLisp graph typ lisp = anno typ lisp
+typeLisp graph typ' lisp = anno typ' lisp
   where
     anno :: Type -> LISP Pos Atom -> LISP_T Atom
     anno typ (LIST pos arr) =
@@ -62,7 +64,8 @@ typeLisp graph typ lisp = anno typ lisp
                      -- no type for now. 
                      ATOM_T _ _ _ (Right (Component com)) ->
                        if length com.signature -1 == length xs
-                          then LIST_T typ pos Nothing (atom : zipWith anno com.signature xs)
+                          then let sig = tail com.signature
+                               in LIST_T typ pos Nothing (atom : zipWith anno sig xs)
                           else let err = Just (errArity "thingy")
                                    sig = tail (com.signature ++ typePadding)
                                in LIST_T typ pos err (atom : zipWith anno sig xs)
@@ -74,10 +77,14 @@ typeLisp graph typ lisp = anno typ lisp
                 case head component.signature of
                     Just t -> if t == typ then (Right $ Component component)
                                           else (errExpected typ t)
-                    Nothing -> Left ("Bad component signature")
+                    Nothing -> Left "Bad component signature"
+
+    anno typ (ATOM pos s@(Str str)) = ATOM_T typ pos s $
+        if typ == "String"
+           then Right $ Component { signature: ["String"] }
+           else errExpected typ "String"
+
 
     errExpected typ t = Left $ "Couldn't match expected type " ++ typ ++ " with " ++ t
     errArity name = "Wrong number of arguments for " ++ name
-
-
 
