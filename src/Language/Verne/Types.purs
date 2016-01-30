@@ -60,13 +60,19 @@ derive instance genericParseResult :: (Generic a) => Generic (ParseResult a)
 instance eqParseResult :: (Eq a, Generic a) => Eq (ParseResult a) where eq = gEq
 instance showParseResult :: (Show a, Generic a) => Show (ParseResult a) where show = gShow
 
-newtype Component = Component { name :: String, signature :: Array Type }
+newtype Component = Component
+    { name :: String
+    , signature :: Array Type
+    , original :: {}
+    }
 
 derive instance genericComponent :: Generic Component
 
 instance componentIsForeign :: IsForeign Component where
-    read fo = Component <$>
-        ({name:_, signature:_} <$> readProp "name" fo <*> readProp "signature" fo)
+    read fo = Component <$> ({name:_, signature:_, original:_}
+                        <$> readProp "name" fo
+                        <*> readProp "signature" fo
+                        <*> (pure $ unsafeFromForeign fo))
 
 type Error = String
 

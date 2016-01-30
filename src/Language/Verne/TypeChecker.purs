@@ -16,8 +16,10 @@ import Language.Verne.Namespace
 import Language.Verne.Types
 
 
+foreign import toComponentOriginal :: forall a. a -> {}
+
+
 -- todo: typed errors
--- todo: component properties are extracted and verified at init time
 typeLisp :: Namespace -> Type -> LISP Pos Atom -> LISP_T Atom
 typeLisp ns typ' lisp = anno typ' lisp
   where
@@ -34,7 +36,7 @@ typeLisp ns typ' lisp = anno typ' lisp
                    if length com.signature -1 == length xs
                       then let sig = tail com.signature
                            in LIST_T typ pos Nothing (atom : zipWith anno sig xs)
-                      else let err = Just (errArity "thingy")
+                      else let err = Just (errArity com.name)
                                sig = tail (com.signature ++ typePadding)
                            in LIST_T typ pos err (atom : zipWith anno sig xs)
 
@@ -49,9 +51,13 @@ typeLisp ns typ' lisp = anno typ' lisp
 
     anno typ (ATOM pos s@(Str str)) = ATOM_T typ pos s $
         if typ == "String"
-           then Right $ Component { name: "", signature: ["String"] }
+           then Right $ mkComponant "" ["String"] str
            else errExpected typ "String"
 
     errExpected typ t = Left $ "Couldn't match expected type " ++ typ ++ " with " ++ t
     errArity name = "Wrong number of arguments for " ++ name
 
+    mkComponant name sig value = Component { name
+                                           , signature: sig
+                                           , original: toComponentOriginal value
+                                           }
