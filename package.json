@@ -5,8 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "bower install -p && npm run-script bundle",
-    "prestart": "bower install",
     "bundle": "pulp build --force --modules Language.Verne.Parser,Data.Either,Language.Verne.TypeChecker,Language.Verne.Namespace,Language.Verne.Runner,Language.Verne.Types,Language.Verne --to index.js && echo 'module.exports = PS;' >> index.js"
   },
   "author": "",
