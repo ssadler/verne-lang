@@ -32,10 +32,10 @@ parseArg :: Parser (LISP Pos Atom)
 parseArg = parseAtom <|> parseParens
   where
   parseParens = fix $ \_ -> do
-    start <- getPos
+    a <- getPos
     args <- char '(' *> skipSpaces *> parseArgs
-    end <- (eof *> pure 1000000) <|> (char ')' *> getPos)
-    pure $ LIST (Pos start end) args
+    b <- (eof *> pure 1000000) <|> (char ')' *> getPos)
+    pure $ LIST (Pos a b) args
   parseAtom = parseStr <|> parseName
 
 

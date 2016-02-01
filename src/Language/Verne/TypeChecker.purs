@@ -72,7 +72,7 @@ typeLisp ns typ' lisp = anno typ' lisp
 
     mkComponant name sig value = Component { name
                                            , signature: sig
-                                           , original: toComponentOriginal value
+                                           , autocomplete: Nothing
                                            }
 
     -- | For objects that can be overloaded by a string
@@ -83,9 +83,16 @@ typeLisp ns typ' lisp = anno typ' lisp
                                   else Nothing
 
 
-foreign import toComponentOriginal :: forall a. a -> {}
+instance eqLISP_T :: (Eq a) => Eq (LISP_T a) where
+    eq (LIST_T {typ,pos,merr,arr}) (LIST_T {typ=typ2,pos=pos2,merr=merr2,arr=arr2}) =
+        typ == typ2 && pos == pos2 && merr == merr2 && arr == arr2
+    eq (ATOM_T {typ,pos,atom,ecomp}) (ATOM_T {typ=typ2,pos=pos2,atom=atom2,ecomp=ecomp2}) =
+        typ == typ2 && pos == pos2 && atom == atom2 && ecomp == ecomp2
+    eq (LIST_T _) (ATOM_T _) = false
+    eq (ATOM_T _) (LIST_T _) = false
 
-derive instance genericLISP_T :: (Generic a) => Generic (LISP_T a)
-instance eqLISP_T :: (Generic a, Eq a) => Eq (LISP_T a) where eq = gEq
-instance showLISP_T :: (Generic a, Show a) => Show (LISP_T a) where
-    show = compactShow <<< gShow
+instance showLISP_T :: (Show a) => Show (LISP_T a) where
+    show (LIST_T {typ,pos,merr,arr}) =
+        "LIST_T {" <> typ <> "," <> show pos <> "," <> show merr <> "," <> show arr <> "}"
+    show (ATOM_T {typ,pos,atom,ecomp}) =
+        "ATOM_T {" <> typ <> "," <> show pos <> "," <> show atom <> "," <> show ecomp <> "}"

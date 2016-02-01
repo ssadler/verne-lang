@@ -12,10 +12,14 @@ module Language.Verne.Types
 import Data.Generic
 import Data.Foreign
 import Data.Foreign.Class
+import Data.Foreign.NullOrUndefined
+import Data.Maybe
 
 import Prelude
 
 import Text.Parsing.StringParser hiding (Pos(..))
+
+import Language.Verne.Utils
 
 -- | Core syntax tree container
 --
@@ -56,19 +60,27 @@ instance showParseResult :: (Show a, Generic a) => Show (ParseResult a) where sh
 newtype Component = Component
     { name :: String
     , signature :: Array Type
-    , original :: {}
+    , autocomplete :: Maybe Foreign
     }
 
-derive instance genericComponent :: Generic Component
-
 instance componentIsForeign :: IsForeign Component where
-    read fo = Component <$> ({name:_, signature:_, original:_}
+    read fo = Component <$> ({name:_, signature:_, autocomplete:_}
                         <$> readProp "name" fo
                         <*> readProp "signature" fo
-                        <*> (pure $ unsafeFromForeign fo))
+                        <*> (runNullOrUndefined <$> readProp "autocomplete" fo))
 
-type Error = String
+instance showComponent :: Show Component where
+    show (Component {name,signature,autocomplete}) =
+        let f = (\_ -> "f()") <$> autocomplete
+         in "Component {" <> name <> "," <> show signature <> "," <> show f <> "}"
+
+instance eqComponent :: Eq Component where
+    eq (Component {name,signature,autocomplete})
+       (Component {name=n2,signature=s2,autocomplete=a2}) =
+           name == n2 && signature == s2 && isSame autocomplete a2
+
 
 -- | Core language types
 --
 type Type = String
+type Error = String
