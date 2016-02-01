@@ -29,18 +29,18 @@ parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
 -- | this thing breaks the rules of not skipping spaces after itself.
 parseArg :: Parser (LISP Pos Atom)
-parseArg = codePos (parseAtom <|> parseParens)
+parseArg = parseAtom <|> parseParens
   where
   parseParens = fix $ \_ -> do
-    args <- char '(' *> skipSpaces *> parseArgs <* optional (char ')')
-    pure $ flip LIST args
-  parseAtom = do
-    atom <- parseStr <|> parseName
-    pure $ flip ATOM atom
+    start <- getPos
+    args <- char '(' *> skipSpaces *> parseArgs
+    end <- (eof *> pure 1000000) <|> (char ')' *> getPos)
+    pure $ LIST (Pos start end) args
+  parseAtom = parseStr <|> parseName
 
 
-parseName :: Parser Atom
-parseName = do
+parseName :: Parser (LISP Pos Atom)
+parseName = codePos $ flip ATOM <$> do
   a <- lowerCaseChar
   rest <- many myAlphaNum
   pure $ Name $ fromCharArray $ fromList $ Cons a rest
@@ -50,11 +50,13 @@ parseName = do
                 || c >= '0' && c <= '9' 
 
 
-parseStr :: Parser Atom
-parseStr =
-  let str = many $ satisfy $ (not <<< (=='"'))
-      lit = between (char '"') (char '"') str
-  in  Str <$> fromCharArray <<< fromList <$> lit
+parseStr :: Parser (LISP Pos Atom)
+parseStr = do
+  a <- getPos
+  char '"'
+  str <- many $ satisfy $ (not <<< (=='"'))
+  b <- (eof *> pure 1000000) <|> (char '"' *> getPos)
+  pure $ ATOM (Pos a b) (Str (fromCharArray (fromList str)))
 
 
 codePos :: forall b. Parser (Pos -> LISP Pos b) -> Parser (LISP Pos b)
