@@ -11,7 +11,8 @@ import Test.Unit.Console (TESTOUTPUT())
 
 import Text.Parsing.StringParser hiding (Pos(..))
 
-import Language.Verne
+import Language.Verne.Types
+import Language.Verne.Parser
 
 
 main :: forall e. Eff ( testOutput :: TESTOUTPUT

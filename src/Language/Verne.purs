@@ -1,12 +1,8 @@
 module Language.Verne
-  ( module Language.Verne.Parser
-  , module Language.Verne.Types
-  , module Language.Verne.TypeChecker
-  , module Language.Verne.Namespace
+  ( isLeft
   ) where
 
+import Data.Either hiding (isLeft)
 
-import Language.Verne.Parser
-import Language.Verne.Namespace
-import Language.Verne.Types
-import Language.Verne.TypeChecker
+isLeft :: forall a b. Either a b -> Boolean
+isLeft = Data.Either.isLeft
