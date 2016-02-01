@@ -8,7 +8,6 @@ import Prelude
 import Data.Array ((:), head, length, replicate, uncons, zipWith)
 import Data.Array.Unsafe (tail)
 import Data.Either
-import Data.Generic
 import Data.Maybe
 
 import Language.Verne.Namespace

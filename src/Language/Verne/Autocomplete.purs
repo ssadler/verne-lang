@@ -15,8 +15,7 @@ import Language.Verne.Types
 
 import Prelude
 
-data Result = ExpressionIsComplete
-            | CompletionsForType Type
+data Result = CompletionsForType Type
             | ComponentAutocomplete Foreign
             | ShowError Error
 
