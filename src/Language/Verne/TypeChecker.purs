@@ -41,7 +41,7 @@ typeLisp ns typ' lisp = anno typ' lisp
                            in LIST_T typ pos err (atom : zipWith anno sig xs)
 
     anno typ (ATOM pos n@(Name name)) = ATOM_T typ pos n $
-        case componentByName name ns  of
+        case componentByName name ns of
             Nothing -> Left ("Not defined: " ++ name)
             Just (Component component) ->
                 case head component.signature of
@@ -52,7 +52,9 @@ typeLisp ns typ' lisp = anno typ' lisp
     anno typ (ATOM pos s@(Str str)) = ATOM_T typ pos s $
         if typ == "String"
            then Right $ mkComponant "" ["String"] str
-           else errExpected typ "String"
+           else case strConstruct typ str of
+                     Nothing -> errExpected typ "String"
+                     Just comp -> Right comp
 
     errExpected typ t = Left $ "Couldn't match expected type " ++ typ ++ " with " ++ t
     errArity name = "Wrong number of arguments for " ++ name
@@ -61,3 +63,11 @@ typeLisp ns typ' lisp = anno typ' lisp
                                            , signature: sig
                                            , original: toComponentOriginal value
                                            }
+
+    -- | For objects that can be overloaded by a string
+    strConstruct typ str =
+        componentByName typ ns >>=
+            \(Component c) -> if c.signature == [typ, "String"]
+                                  then Just (mkComponant "" [typ] str)
+                                  else Nothing
+

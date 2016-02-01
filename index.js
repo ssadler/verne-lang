@@ -41,6 +41,18 @@ var PS = { };
     };
   };
 
+  exports.eqArrayImpl = function (f) {
+    return function (xs) {
+      return function (ys) {
+        if (xs.length !== ys.length) return false;
+        for (var i = 0; i < xs.length; i++) {
+          if (!f(xs[i])(ys[i])) return false;
+        }
+        return true;
+      };
+    };
+  };
+
   //- Ord ------------------------------------------------------------------------
 
   exports.unsafeCompareImpl = function (lt) {
@@ -255,6 +267,9 @@ var PS = { };
   var $eq$eq = function (__dict_Eq_7) {
       return eq(__dict_Eq_7);
   };
+  var eqArray = function (__dict_Eq_8) {
+      return new Eq($foreign.eqArrayImpl($eq$eq(__dict_Eq_8)));
+  };
   var disj = function (dict) {
       return dict.disj;
   };
@@ -429,6 +444,7 @@ var PS = { };
   exports["eqInt"] = eqInt;
   exports["eqChar"] = eqChar;
   exports["eqString"] = eqString;
+  exports["eqArray"] = eqArray;
   exports["ordString"] = ordString;
   exports["ordChar"] = ordChar;
   exports["boundedBoolean"] = boundedBoolean;
@@ -818,6 +834,19 @@ var PS = { };
           throw new Error("Failed pattern match at Data.Maybe line 121, column 1 - line 145, column 1: " + [ _3.constructor.name, x.constructor.name ]);
       };
   });
+  var bindMaybe = new Prelude.Bind(function () {
+      return applyMaybe;
+  }, function (_5) {
+      return function (k) {
+          if (_5 instanceof Just) {
+              return k(_5.value0);
+          };
+          if (_5 instanceof Nothing) {
+              return Nothing.value;
+          };
+          throw new Error("Failed pattern match at Data.Maybe line 180, column 1 - line 199, column 1: " + [ _5.constructor.name, k.constructor.name ]);
+      };
+  });
   var applicativeMaybe = new Prelude.Applicative(function () {
       return applyMaybe;
   }, Just.create);
@@ -827,7 +856,8 @@ var PS = { };
   exports["maybe"] = maybe;
   exports["functorMaybe"] = functorMaybe;
   exports["applyMaybe"] = applyMaybe;
-  exports["applicativeMaybe"] = applicativeMaybe;;
+  exports["applicativeMaybe"] = applicativeMaybe;
+  exports["bindMaybe"] = bindMaybe;;
  
 })(PS["Data.Maybe"] = PS["Data.Maybe"] || {});
 (function(exports) {
@@ -4646,6 +4676,20 @@ var PS = { };
                       };
                   };
               };
+              var strConstruct = function (typ) {
+                  return function (str) {
+                      return Prelude[">>="](Data_Maybe.bindMaybe)(Language_Verne_Namespace.componentByName(typ)(ns))(function (_0) {
+                          var _3 = Prelude["=="](Prelude.eqArray(Prelude.eqString))(_0.signature)([ typ, "String" ]);
+                          if (_3) {
+                              return new Data_Maybe.Just(mkComponant("")([ typ ])(str));
+                          };
+                          if (!_3) {
+                              return Data_Maybe.Nothing.value;
+                          };
+                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _3.constructor.name ]);
+                      });
+                  };
+              };
               var errExpected = function (typ) {
                   return function (t) {
                       return Data_Either.Left.create("Couldn't match expected type " + (typ + (" with " + t)));
@@ -4655,74 +4699,81 @@ var PS = { };
                   return "Wrong number of arguments for " + name;
               };
               var anno = function (typ) {
-                  return function (_0) {
-                      if (_0 instanceof Language_Verne_Types.LIST) {
-                          var _3 = Data_Array.uncons(_0.value1);
-                          if (_3 instanceof Data_Maybe.Nothing) {
-                              return new Language_Verne_Types.LIST_T(typ, _0.value0, new Data_Maybe.Just("Empty expression not allowed"), [  ]);
+                  return function (_1) {
+                      if (_1 instanceof Language_Verne_Types.LIST) {
+                          var _6 = Data_Array.uncons(_1.value1);
+                          if (_6 instanceof Data_Maybe.Nothing) {
+                              return new Language_Verne_Types.LIST_T(typ, _1.value0, new Data_Maybe.Just("Empty expression not allowed"), [  ]);
                           };
-                          if (_3 instanceof Data_Maybe.Just) {
-                              var typePadding = Data_Array.replicate(Data_Array.length(_3.value0.tail))("");
-                              var atom = anno(typ)(_3.value0.head);
+                          if (_6 instanceof Data_Maybe.Just) {
+                              var typePadding = Data_Array.replicate(Data_Array.length(_6.value0.tail))("");
+                              var atom = anno(typ)(_6.value0.head);
                               if (atom instanceof Language_Verne_Types.ATOM_T && atom.value3 instanceof Data_Either.Left) {
-                                  return new Language_Verne_Types.LIST_T(typ, _0.value0, new Data_Maybe.Just(atom.value3.value0), Data_Array[":"](atom)(Data_Array.zipWith(anno)(typePadding)(_3.value0.tail)));
+                                  return new Language_Verne_Types.LIST_T(typ, _1.value0, new Data_Maybe.Just(atom.value3.value0), Data_Array[":"](atom)(Data_Array.zipWith(anno)(typePadding)(_6.value0.tail)));
                               };
                               if (atom instanceof Language_Verne_Types.ATOM_T && atom.value3 instanceof Data_Either.Right) {
-                                  var _10 = Data_Array.length(atom.value3.value0.signature) - 1 === Data_Array.length(_3.value0.tail);
-                                  if (_10) {
+                                  var _13 = Data_Array.length(atom.value3.value0.signature) - 1 === Data_Array.length(_6.value0.tail);
+                                  if (_13) {
                                       var sig = Data_Array_Unsafe.tail(atom.value3.value0.signature);
-                                      return new Language_Verne_Types.LIST_T(typ, _0.value0, Data_Maybe.Nothing.value, Data_Array[":"](atom)(Data_Array.zipWith(anno)(sig)(_3.value0.tail)));
+                                      return new Language_Verne_Types.LIST_T(typ, _1.value0, Data_Maybe.Nothing.value, Data_Array[":"](atom)(Data_Array.zipWith(anno)(sig)(_6.value0.tail)));
                                   };
-                                  if (!_10) {
+                                  if (!_13) {
                                       var sig = Data_Array_Unsafe.tail(Prelude["++"](Prelude.semigroupArray)(atom.value3.value0.signature)(typePadding));
                                       var err = new Data_Maybe.Just(errArity(atom.value3.value0.name));
-                                      return new Language_Verne_Types.LIST_T(typ, _0.value0, err, Data_Array[":"](atom)(Data_Array.zipWith(anno)(sig)(_3.value0.tail)));
+                                      return new Language_Verne_Types.LIST_T(typ, _1.value0, err, Data_Array[":"](atom)(Data_Array.zipWith(anno)(sig)(_6.value0.tail)));
                                   };
-                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _10.constructor.name ]);
+                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _13.constructor.name ]);
                               };
                               throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ atom.constructor.name ]);
                           };
-                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _3.constructor.name ]);
+                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _6.constructor.name ]);
                       };
-                      if (_0 instanceof Language_Verne_Types.ATOM && _0.value1 instanceof Language_Verne_Types.Name) {
-                          return Language_Verne_Types.ATOM_T.create(typ)(_0.value0)(_0.value1)((function () {
-                              var _21 = Language_Verne_Namespace.componentByName(_0.value1.value0)(ns);
-                              if (_21 instanceof Data_Maybe.Nothing) {
-                                  return new Data_Either.Left("Not defined: " + _0.value1.value0);
+                      if (_1 instanceof Language_Verne_Types.ATOM && _1.value1 instanceof Language_Verne_Types.Name) {
+                          return Language_Verne_Types.ATOM_T.create(typ)(_1.value0)(_1.value1)((function () {
+                              var _24 = Language_Verne_Namespace.componentByName(_1.value1.value0)(ns);
+                              if (_24 instanceof Data_Maybe.Nothing) {
+                                  return new Data_Either.Left("Not defined: " + _1.value1.value0);
                               };
-                              if (_21 instanceof Data_Maybe.Just) {
-                                  var _22 = Data_Array.head(_21.value0.signature);
-                                  if (_22 instanceof Data_Maybe.Just) {
-                                      var _23 = Prelude["=="](Prelude.eqString)(_22.value0)(typ);
-                                      if (_23) {
-                                          return Data_Either.Right.create(_21.value0);
+                              if (_24 instanceof Data_Maybe.Just) {
+                                  var _25 = Data_Array.head(_24.value0.signature);
+                                  if (_25 instanceof Data_Maybe.Just) {
+                                      var _26 = Prelude["=="](Prelude.eqString)(_25.value0)(typ);
+                                      if (_26) {
+                                          return Data_Either.Right.create(_24.value0);
                                       };
-                                      if (!_23) {
-                                          return errExpected(typ)(_22.value0);
+                                      if (!_26) {
+                                          return errExpected(typ)(_25.value0);
                                       };
-                                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _23.constructor.name ]);
+                                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _26.constructor.name ]);
                                   };
-                                  if (_22 instanceof Data_Maybe.Nothing) {
+                                  if (_25 instanceof Data_Maybe.Nothing) {
                                       return new Data_Either.Left("Bad component signature");
                                   };
-                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _22.constructor.name ]);
+                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _25.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _21.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _24.constructor.name ]);
                           })());
                       };
-                      if (_0 instanceof Language_Verne_Types.ATOM && _0.value1 instanceof Language_Verne_Types.Str) {
-                          return Language_Verne_Types.ATOM_T.create(typ)(_0.value0)(_0.value1)((function () {
-                              var _29 = Prelude["=="](Prelude.eqString)(typ)("String");
-                              if (_29) {
-                                  return Data_Either.Right.create(mkComponant("")([ "String" ])(_0.value1.value0));
+                      if (_1 instanceof Language_Verne_Types.ATOM && _1.value1 instanceof Language_Verne_Types.Str) {
+                          return Language_Verne_Types.ATOM_T.create(typ)(_1.value0)(_1.value1)((function () {
+                              var _32 = Prelude["=="](Prelude.eqString)(typ)("String");
+                              if (_32) {
+                                  return Data_Either.Right.create(mkComponant("")([ "String" ])(_1.value1.value0));
                               };
-                              if (!_29) {
-                                  return errExpected(typ)("String");
+                              if (!_32) {
+                                  var _33 = strConstruct(typ)(_1.value1.value0);
+                                  if (_33 instanceof Data_Maybe.Nothing) {
+                                      return errExpected(typ)("String");
+                                  };
+                                  if (_33 instanceof Data_Maybe.Just) {
+                                      return new Data_Either.Right(_33.value0);
+                                  };
+                                  throw new Error("Failed pattern match: " + [ _33.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _29.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ _32.constructor.name ]);
                           })());
                       };
-                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ typ.constructor.name, _0.constructor.name ]);
+                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 23, column 1 - line 24, column 1: " + [ typ.constructor.name, _1.constructor.name ]);
                   };
               };
               return anno(typ$prime)(lisp);
