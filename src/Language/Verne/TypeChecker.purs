@@ -1,10 +1,9 @@
 module Language.Verne.TypeChecker
-  ( typeLisp
+  ( LISP_T(..)
+  , typeLisp
   ) where
 
 import Prelude
-
-import Control.Monad.Reader
 
 import Data.Array ((:), head, length, replicate, uncons, zipWith)
 import Data.Array.Unsafe (tail)
@@ -14,10 +13,19 @@ import Data.Maybe
 
 import Language.Verne.Namespace
 import Language.Verne.Types
+import Language.Verne.Utils
 
-
-foreign import toComponentOriginal :: forall a. a -> {}
-
+-- | The typed lisp data structure
+data LISP_T a = LIST_T { typ::Type
+                       , pos::Pos
+                       , merr::Maybe Error
+                       , arr::Array (LISP_T a)
+                       }
+              | ATOM_T { typ::Type
+                       , pos::Pos
+                       , atom::a
+                       , ecomp::Either Error Component
+                       }
 
 -- todo: typed errors
 typeLisp :: Namespace -> Type -> LISP Pos Atom -> LISP_T Atom
@@ -25,36 +33,39 @@ typeLisp ns typ' lisp = anno typ' lisp
   where
     anno :: Type -> LISP Pos Atom -> LISP_T Atom
     anno typ (LIST pos arr) = case uncons arr of
-        Nothing -> LIST_T typ pos (Just "Empty expression not allowed") []
+        Nothing -> LIST_T {typ, pos, merr:(Just "Empty expression not allowed"), arr:[]}
         Just { head: x, tail: xs } ->
             let atom = anno typ x
                 typePadding = replicate (length xs) ""
             in  case atom of
-                 ATOM_T _ _ _ (Left err) ->
-                     LIST_T typ pos (Just err) (atom : zipWith anno typePadding xs)
-                 ATOM_T _ _ _ (Right (Component com)) ->
+                 ATOM_T {ecomp=(Left err)} ->
+                     LIST_T {typ, pos, merr:(Just err), arr:(atom : zipWith anno typePadding xs)}
+                 ATOM_T {ecomp=(Right (Component com))} ->
                    if length com.signature -1 == length xs
                       then let sig = tail com.signature
-                           in LIST_T typ pos Nothing (atom : zipWith anno sig xs)
-                      else let err = Just (errArity com.name)
+                            in LIST_T {typ, pos, merr:Nothing, arr:(atom : zipWith anno sig xs)}
+                      else let merr = Just (errArity com.name)
                                sig = tail (com.signature ++ typePadding)
-                           in LIST_T typ pos err (atom : zipWith anno sig xs)
+                            in LIST_T {typ, pos, merr, arr:(atom : zipWith anno sig xs)}
 
-    anno typ (ATOM pos n@(Name name)) = ATOM_T typ pos n $
-        case componentByName name ns of
-            Nothing -> Left ("Not defined: " ++ name)
-            Just (Component component) ->
-                case head component.signature of
-                    Just t -> if t == typ then (Right $ Component component)
-                                          else (errExpected typ t)
-                    Nothing -> Left "Bad component signature"
+    anno typ (ATOM pos atom@(Name name)) =
+        let ecomp = case componentByName name ns of
+                Nothing -> Left ("Not defined: " ++ name)
+                Just (Component component) ->
+                    case head component.signature of
+                        Just t -> if t == typ then (Right $ Component component)
+                                              else (errExpected typ t)
+                        Nothing -> Left "Bad component signature"
+        in ATOM_T {typ, pos, atom, ecomp}
 
-    anno typ (ATOM pos s@(Str str)) = ATOM_T typ pos s $
-        if typ == "String"
-           then Right $ mkComponant "" ["String"] str
-           else case strConstruct typ str of
-                     Nothing -> errExpected typ "String"
-                     Just comp -> Right comp
+
+    anno typ (ATOM pos atom@(Str str)) = 
+        let ecomp = if typ == "String"
+               then Right $ mkComponant "" ["String"] str
+               else case strConstruct typ str of
+                         Nothing -> errExpected typ "String"
+                         Just comp -> Right comp
+         in ATOM_T {typ, pos, atom, ecomp}
 
     errExpected typ t = Left $ "Couldn't match expected type " ++ typ ++ " with " ++ t
     errArity name = "Wrong number of arguments for " ++ name
@@ -71,3 +82,10 @@ typeLisp ns typ' lisp = anno typ' lisp
                                   then Just (mkComponant "" [typ] str)
                                   else Nothing
 
+
+foreign import toComponentOriginal :: forall a. a -> {}
+
+derive instance genericLISP_T :: (Generic a) => Generic (LISP_T a)
+instance eqLISP_T :: (Generic a, Eq a) => Eq (LISP_T a) where eq = gEq
+instance showLISP_T :: (Generic a, Show a) => Show (LISP_T a) where
+    show = compactShow <<< gShow

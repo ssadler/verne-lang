@@ -2,16 +2,12 @@ module Language.Verne.Namespace where
 
 import Prelude
 
-import Control.Monad.Except
-
 import Data.Array.Unsafe (head)
 import Data.Either
 import Data.Foreign
 import Data.Foreign.Class
-import Data.Generic
 import Data.Maybe
 import qualified Data.Map as Map
-import Data.Monoid
 
 import Language.Verne.Types
 

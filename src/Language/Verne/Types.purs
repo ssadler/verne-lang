@@ -1,6 +1,5 @@
 module Language.Verne.Types
   ( LISP(..)
-  , LISP_T(..)
   , Atom(..)
   , Component(..)
   , Error(..)
@@ -10,19 +9,13 @@ module Language.Verne.Types
   ) where
 
 
-import Data.Either
 import Data.Generic
 import Data.Foreign
 import Data.Foreign.Class
-import qualified Data.Map as Map
-import Data.Maybe
 
 import Prelude
 
 import Text.Parsing.StringParser hiding (Pos(..))
-
-import Language.Verne.Utils
-
 
 -- | Core syntax tree container
 --
@@ -75,15 +68,6 @@ instance componentIsForeign :: IsForeign Component where
                         <*> (pure $ unsafeFromForeign fo))
 
 type Error = String
-
-data LISP_T a = LIST_T Type Pos (Maybe Error) (Array (LISP_T a))
-              | ATOM_T Type Pos a (Either Error Component)
-
-derive instance genericLISP_T :: (Generic a) => Generic (LISP_T a)
-instance eqLISP_T :: (Generic a, Eq a) => Eq (LISP_T a) where eq = gEq
-instance showLISP_T :: (Generic a, Show a) => Show (LISP_T a) where
-    show = compactShow <<< gShow
-
 
 -- | Core language types
 --
