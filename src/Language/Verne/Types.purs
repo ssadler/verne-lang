@@ -61,13 +61,16 @@ newtype Component = Component
     { name :: String
     , signature :: Array Type
     , autocomplete :: Maybe Foreign
+    , exec :: Foreign
     }
 
 instance componentIsForeign :: IsForeign Component where
-    read fo = Component <$> ({name:_, signature:_, autocomplete:_}
+    read fo = Component <$> ({name:_, signature:_, autocomplete:_, exec:_}
                         <$> readProp "name" fo
                         <*> readProp "signature" fo
-                        <*> (runNullOrUndefined <$> readProp "autocomplete" fo))
+                        <*> (runNullOrUndefined <$> readProp "autocomplete" fo)
+                        <*> readProp "exec" fo
+                            )
 
 instance showComponent :: Show Component where
     show (Component {name,signature,autocomplete}) =
@@ -75,9 +78,9 @@ instance showComponent :: Show Component where
          in "Component {" <> name <> "," <> show signature <> "," <> show f <> "}"
 
 instance eqComponent :: Eq Component where
-    eq (Component {name,signature,autocomplete})
-       (Component {name=n2,signature=s2,autocomplete=a2}) =
-           name == n2 && signature == s2 && isSame autocomplete a2
+    eq (Component {name,signature,autocomplete,exec})
+       (Component {name=n2,signature=s2,autocomplete=a2,exec=e2}) =
+           name == n2 && signature == s2 && isSame autocomplete a2 && isSame exec e2
 
 
 -- | Core language types

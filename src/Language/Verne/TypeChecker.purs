@@ -8,6 +8,7 @@ import Prelude
 import Data.Array ((:), head, length, replicate, uncons, zipWith)
 import Data.Array.Unsafe (tail)
 import Data.Either
+import Data.Foreign
 import Data.Maybe
 
 import Language.Verne.Namespace
@@ -72,6 +73,7 @@ typeLisp ns typ' lisp = anno typ' lisp
     mkComponant name sig value = Component { name
                                            , signature: sig
                                            , autocomplete: Nothing
+                                           , exec: toForeign (\_ -> value)
                                            }
 
     -- | For objects that can be overloaded by a string

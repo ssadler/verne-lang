@@ -18,7 +18,8 @@
     "purescript-string-parsers": "git@github.com:libscott/purescript-string-parsers.git#0d5ea9b",
     "purescript-maps": "~0.5.4",
     "purescript-foreign": "~0.7.2",
-    "purescript-transformers": "~0.8.4"
+    "purescript-transformers": "~0.8.4",
+    "purescript-strings": "~0.7.1"
   },
   "devDependencies": {
     "purescript-test-unit": "~4.1.0"

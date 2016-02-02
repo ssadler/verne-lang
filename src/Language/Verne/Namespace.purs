@@ -24,7 +24,7 @@ componentByName :: String -> Namespace -> Maybe Component
 componentByName ident (Namespace byName _) = Map.lookup ident byName
 
 
-componentsByTypeHead :: String -> Namespace -> Array Component
+componentsByTypeHead :: Type -> Namespace -> Array Component
 componentsByTypeHead typ (Namespace _ byTypeHead) =
     maybe [] id (Map.lookup typ byTypeHead)
 
