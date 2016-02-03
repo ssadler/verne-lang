@@ -18,14 +18,16 @@ import Text.Parsing.StringParser.String
 
 import Language.Verne.Types
 
+-- | Maxpos is a number that's always bigger than another number.
+-- In this case the length of a code expression.  Used to mean "infinity".
+maxpos :: Int
+maxpos = 1000000
 
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
-
 parseArgs :: Parser (Array (LISP Pos Atom))
 parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
-
 
 -- | this thing breaks the rules of not skipping spaces after itself.
 parseArg :: Parser (LISP Pos Atom)
@@ -34,10 +36,9 @@ parseArg = parseAtom <|> parseParens
   parseParens = fix $ \_ -> do
     a <- getPos
     args <- char '(' *> skipSpaces *> parseArgs
-    b <- (eof *> pure 1000000) <|> (char ')' *> getPos)
+    b <- (eof *> pure maxpos) <|> (char ')' *> getPos)
     pure $ LIST (Pos a b) args
   parseAtom = parseStr <|> parseName
-
 
 parseName :: Parser (LISP Pos Atom)
 parseName = codePos $ flip ATOM <$> do
@@ -49,15 +50,13 @@ parseName = codePos $ flip ATOM <$> do
                 || c >= 'A' && c <= 'Z'
                 || c >= '0' && c <= '9' 
 
-
 parseStr :: Parser (LISP Pos Atom)
 parseStr = do
   a <- getPos
   char '"'
   str <- many $ satisfy $ (not <<< (=='"'))
-  b <- (eof *> pure 1000000) <|> (char '"' *> getPos)
+  b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
   pure $ ATOM (Pos a b) (Str (fromCharArray (fromList str)))
-
 
 codePos :: forall b. Parser (Pos -> LISP Pos b) -> Parser (LISP Pos b)
 codePos p = do
@@ -66,15 +65,13 @@ codePos p = do
   b <- getPos
   pure $ f $ Pos a b
 
-
 parse :: String -> ParseResult (LISP Pos Atom)
 parse input =
     unParser parseCode {str: input, pos: 0} onErr checkSuccess
   where
     onErr pos (ParseError err) = Failure pos err
     onErr pos EndOfInput       = Failure pos "EndOfInput"
-    parseCode = skipSpaces *> codePos (flip LIST <$> parseArgs)
-
+    parseCode = LIST <$> (Pos <$> getPos <*> pure maxpos) <*> parseArgs
 
 checkSuccess :: LISP Pos Atom -> PosString -> ParseResult (LISP Pos Atom)
 checkSuccess a _ = dive a

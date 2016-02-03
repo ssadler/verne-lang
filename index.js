@@ -5007,6 +5007,7 @@ var PS = { };
   var Text_Parsing_StringParser_String = PS["Text.Parsing.StringParser.String"];
   var Language_Verne_Types = PS["Language.Verne.Types"];
   var Data_Unfoldable = PS["Data.Unfoldable"];     
+  var maxpos = 1000000;
   var getPos = new Text_Parsing_StringParser.Parser(function (_13) {
       return function (_12) {
           return function (sc) {
@@ -5021,7 +5022,7 @@ var PS = { };
                   return Prelude["=="](Prelude.eqChar)(_0)("\"");
               })(_48);
           })))(function (_7) {
-              return Prelude.bind(Text_Parsing_StringParser.bindParser)(Control_Alt["<|>"](Text_Parsing_StringParser.altParser)(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String.eof)(Prelude.pure(Text_Parsing_StringParser.applicativeParser)(1000000)))(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String["char"]("\""))(getPos)))(function (_6) {
+              return Prelude.bind(Text_Parsing_StringParser.bindParser)(Control_Alt["<|>"](Text_Parsing_StringParser.altParser)(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String.eof)(Prelude.pure(Text_Parsing_StringParser.applicativeParser)(maxpos)))(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String["char"]("\""))(getPos)))(function (_6) {
                   return Prelude.pure(Text_Parsing_StringParser.applicativeParser)(new Language_Verne_Types.ATOM(new Language_Verne_Types.Pos(_8, _6), new Language_Verne_Types.Str(Data_String.fromCharArray(Data_List.fromList(Data_Unfoldable.unfoldableArray)(_7)))));
               });
           });
@@ -5053,7 +5054,7 @@ var PS = { };
       var parseParens = Text_Parsing_StringParser_Combinators.fix(function (_15) {
           return Prelude.bind(Text_Parsing_StringParser.bindParser)(getPos)(function (_3) {
               return Prelude.bind(Text_Parsing_StringParser.bindParser)(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String["char"]("("))(Text_Parsing_StringParser_String.skipSpaces))(parseArgs))(function (_2) {
-                  return Prelude.bind(Text_Parsing_StringParser.bindParser)(Control_Alt["<|>"](Text_Parsing_StringParser.altParser)(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String.eof)(Prelude.pure(Text_Parsing_StringParser.applicativeParser)(1000000)))(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String["char"](")"))(getPos)))(function (_1) {
+                  return Prelude.bind(Text_Parsing_StringParser.bindParser)(Control_Alt["<|>"](Text_Parsing_StringParser.altParser)(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String.eof)(Prelude.pure(Text_Parsing_StringParser.applicativeParser)(maxpos)))(Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String["char"](")"))(getPos)))(function (_1) {
                       return Prelude.pure(Text_Parsing_StringParser.applicativeParser)(new Language_Verne_Types.LIST(new Language_Verne_Types.Pos(_3, _1), _2));
                   });
               });
@@ -5076,7 +5077,7 @@ var PS = { };
                           _18 = _36.value0;
                           continue tco;
                       };
-                      throw new Error("Failed pattern match at Language.Verne.Parser line 79, column 1 - line 80, column 1: " + [ _36.constructor.name ]);
+                      throw new Error("Failed pattern match at Language.Verne.Parser line 76, column 1 - line 77, column 1: " + [ _36.constructor.name ]);
                   };
                   if (_18 instanceof Language_Verne_Types.ATOM && _18.value1 instanceof Language_Verne_Types.Catch) {
                       return new Language_Verne_Types.Partial(a);
@@ -5084,14 +5085,14 @@ var PS = { };
                   if (_18 instanceof Language_Verne_Types.ATOM) {
                       return new Language_Verne_Types.Success(a);
                   };
-                  throw new Error("Failed pattern match at Language.Verne.Parser line 79, column 1 - line 80, column 1: " + [ _18.constructor.name ]);
+                  throw new Error("Failed pattern match at Language.Verne.Parser line 76, column 1 - line 77, column 1: " + [ _18.constructor.name ]);
               };
           };
           return dive(a);
       };
   };
   var parse = function (input) {
-      var parseCode = Control_Apply["*>"](Text_Parsing_StringParser.applyParser)(Text_Parsing_StringParser_String.skipSpaces)(codePos(Prelude["<$>"](Text_Parsing_StringParser.functorParser)(Prelude.flip(Language_Verne_Types.LIST.create))(parseArgs)));
+      var parseCode = Prelude["<*>"](Text_Parsing_StringParser.applyParser)(Prelude["<$>"](Text_Parsing_StringParser.functorParser)(Language_Verne_Types.LIST.create)(Prelude["<*>"](Text_Parsing_StringParser.applyParser)(Prelude["<$>"](Text_Parsing_StringParser.functorParser)(Language_Verne_Types.Pos.create)(getPos))(Prelude.pure(Text_Parsing_StringParser.applicativeParser)(maxpos))))(parseArgs);
       var onErr = function (pos) {
           return function (_17) {
               if (_17 instanceof Text_Parsing_StringParser.ParseError) {
@@ -5100,7 +5101,7 @@ var PS = { };
               if (_17 instanceof Text_Parsing_StringParser.EndOfInput) {
                   return new Language_Verne_Types.Failure(pos, "EndOfInput");
               };
-              throw new Error("Failed pattern match at Language.Verne.Parser line 70, column 1 - line 71, column 1: " + [ pos.constructor.name, _17.constructor.name ]);
+              throw new Error("Failed pattern match at Language.Verne.Parser line 68, column 1 - line 69, column 1: " + [ pos.constructor.name, _17.constructor.name ]);
           };
       };
       return Text_Parsing_StringParser.unParser(parseCode)({
