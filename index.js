@@ -4702,6 +4702,8 @@ var PS = { };
   "use strict";
   var Control_Monad_Reader_Class = PS["Control.Monad.Reader.Class"];
   var Control_Monad_Trans = PS["Control.Monad.Trans"];
+  var Control_Alt = PS["Control.Alt"];
+  var Control_Apply = PS["Control.Apply"];
   var Control_Monad = PS["Control.Monad"];
   var Control_Monad_Except = PS["Control.Monad.Except"];
   var Control_Monad_Except_Trans = PS["Control.Monad.Except.Trans"];
@@ -4716,6 +4718,7 @@ var PS = { };
   var Language_Verne_Namespace = PS["Language.Verne.Namespace"];
   var Language_Verne_TypeChecker = PS["Language.Verne.TypeChecker"];
   var Language_Verne_Types = PS["Language.Verne.Types"];
+  var Debug_Trace = PS["Debug.Trace"];
   var Prelude = PS["Prelude"];     
   var NameCompletions = (function () {
       function NameCompletions(value0) {
@@ -4735,6 +4738,13 @@ var PS = { };
       };
       return ComponentAutocomplete;
   })();
+  var ComponentIsComplete = (function () {
+      function ComponentIsComplete() {
+
+      };
+      ComponentIsComplete.value = new ComponentIsComplete();
+      return ComponentIsComplete;
+  })();
   var ShowError = (function () {
       function ShowError(value0) {
           this.value0 = value0;
@@ -4744,22 +4754,27 @@ var PS = { };
       };
       return ShowError;
   })();
-  var complete = function (_42) {
-      return Control_Monad_Trans.lift(Control_Monad_Reader_Trans.monadTransReaderT)(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))(Control_Monad_Except.except(Data_Either.Left.create(_42)));
+  var complete = function (_45) {
+      return Control_Monad_Trans.lift(Control_Monad_Reader_Trans.monadTransReaderT)(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))(Control_Monad_Except.except(Data_Either.Left.create(_45)));
   };
-  var componentAutocomplete = function (_2) {
-      return Data_Maybe.maybe(Prelude.pure(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit))(function (_43) {
-          return complete(ComponentAutocomplete.create(_43));
-      })(_2.autocomplete);
+  var componentAutocomplete = function (_3) {
+      return Data_Maybe.maybe(Prelude.pure(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit))(function (_46) {
+          return complete(ComponentAutocomplete.create(_46));
+      })(_3.autocomplete);
   };
-  var nameCompletions = function (name) {
+  var completionWidget = function (name) {
+      return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad_Reader_Class.ask(Control_Monad_Reader_Trans.monadReaderReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))))(function (_0) {
+          return Data_Maybe.maybe(Prelude["return"](Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit))(componentAutocomplete)(Language_Verne_Namespace.componentByName(name)(_0.ns));
+      });
+  };
+  var findCompletions = function (prefix) {
       return function (typ) {
-          return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad_Reader_Class.ask(Control_Monad_Reader_Trans.monadReaderReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))))(function (_0) {
-              var lname = Data_String.toLower(name);
-              var hasPrefix = function (_4) {
-                  return Prelude["=="](Data_Maybe.eqMaybe(Prelude.eqInt))(Data_String.indexOf(lname)(Data_String.toLower(_4.name)))(new Data_Maybe.Just(0));
+          return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad_Reader_Class.ask(Control_Monad_Reader_Trans.monadReaderReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))))(function (_1) {
+              var lpref = Data_String.toLower(prefix);
+              var hasPrefix = function (_5) {
+                  return Prelude["=="](Data_Maybe.eqMaybe(Prelude.eqInt))(Data_String.indexOf(lpref)(Data_String.toLower(_5.name)))(new Data_Maybe.Just(0));
               };
-              var comps = Language_Verne_Namespace.componentsByTypeHead(typ)(_0.ns);
+              var comps = Language_Verne_Namespace.componentsByTypeHead(typ)(_1.ns);
               var matches = Data_Array.filter(hasPrefix)(comps);
               return complete(new NameCompletions(matches));
           });
@@ -4767,37 +4782,42 @@ var PS = { };
   };
   var completeNextArg = function (arr) {
       var offset = Data_Array.length(arr);
-      var _9 = Data_Array.head(arr);
-      if (_9 instanceof Data_Maybe.Just && (_9.value0 instanceof Language_Verne_TypeChecker.ATOM_T && _9.value0.value0.ecomp instanceof Data_Either.Right)) {
-          var _10 = Data_Array["!!"](_9.value0.value0.ecomp.value0.signature)(offset);
-          if (_10 instanceof Data_Maybe.Just) {
-              return nameCompletions("")(_10.value0);
+      var _11 = Data_Array.head(arr);
+      if (_11 instanceof Data_Maybe.Just && (_11.value0 instanceof Language_Verne_TypeChecker.ATOM_T && _11.value0.value0.ecomp instanceof Data_Either.Right)) {
+          var _12 = Data_Array["!!"](_11.value0.value0.ecomp.value0.signature)(offset);
+          if (_12 instanceof Data_Maybe.Just) {
+              return Control_Apply["*>"](Control_Monad_Reader_Trans.applyReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(completionWidget(_12.value0))(findCompletions("")(_12.value0));
           };
-          if (_10 instanceof Data_Maybe.Nothing) {
+          if (_12 instanceof Data_Maybe.Nothing) {
               return Prelude.pure(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
           };
-          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 72, column 1 - line 73, column 1: " + [ _10.constructor.name ]);
+          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 81, column 1 - line 82, column 1: " + [ _12.constructor.name ]);
       };
-      if (_9 instanceof Data_Maybe.Nothing) {
+      if (_11 instanceof Data_Maybe.Nothing) {
           return Prelude.pure(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
       };
-      throw new Error("Failed pattern match at Language.Verne.Autocomplete line 72, column 1 - line 73, column 1: " + [ _9.constructor.name ]);
+      throw new Error("Failed pattern match at Language.Verne.Autocomplete line 81, column 1 - line 82, column 1: " + [ _11.constructor.name ]);
   };
   var getCompletion$prime = function (atom) {
       if (atom instanceof Language_Verne_TypeChecker.LIST_T) {
-          return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad.when(Control_Monad_Reader_Trans.monadReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Data_Array.length(atom.value0.arr) === 0)(nameCompletions("")(atom.value0.typ)))(function () {
-              return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Data_Traversable.sequence(Data_Traversable.traversableArray)(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude["<$>"](Prelude.functorArray)(getCompletion$prime)(atom.value0.arr)))(function () {
+          return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad.when(Control_Monad_Reader_Trans.monadReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Data_Array.length(atom.value0.arr) === 0)(findCompletions("")(atom.value0.typ)))(function () {
+              return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Data_Traversable.sequence(Data_Traversable.traversableArray)(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude["<$>"](Prelude.functorArray)(getCompletion)(atom.value0.arr)))(function () {
                   return completeNextArg(atom.value0.arr);
               });
           });
       };
       if (atom instanceof Language_Verne_TypeChecker.ATOM_T && atom.value0.ecomp instanceof Data_Either.Right) {
-          return componentAutocomplete(atom.value0.ecomp.value0);
+          return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(componentAutocomplete(atom.value0.ecomp.value0))(function () {
+              if (atom.value0.atom instanceof Language_Verne_Types.Name) {
+                  return findCompletions(atom.value0.atom.value0)(atom.value0.typ);
+              };
+              return Prelude["return"](Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
+          });
       };
       if (atom instanceof Language_Verne_TypeChecker.ATOM_T && atom.value0.ecomp instanceof Data_Either.Left) {
           return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))((function () {
               if (atom.value0.atom instanceof Language_Verne_Types.Name) {
-                  return nameCompletions(atom.value0.atom.value0)(atom.value0.typ);
+                  return findCompletions(atom.value0.atom.value0)(atom.value0.typ);
               };
               return Prelude["return"](Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
           })())(function () {
@@ -4807,31 +4827,27 @@ var PS = { };
       throw new Error("Failed pattern match: " + [ atom.constructor.name ]);
   };
   var getCompletion = function (lisp) {
-      var getPos = function (_3) {
-          if (_3 instanceof Language_Verne_TypeChecker.LIST_T) {
-              return _3.value0.pos;
+      var getPos = function (_4) {
+          if (_4 instanceof Language_Verne_TypeChecker.LIST_T) {
+              return _4.value0.pos;
           };
-          if (_3 instanceof Language_Verne_TypeChecker.ATOM_T) {
-              return _3.value0.pos;
+          if (_4 instanceof Language_Verne_TypeChecker.ATOM_T) {
+              return _4.value0.pos;
           };
-          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 44, column 5 - line 45, column 5: " + [ _3.constructor.name ]);
+          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 46, column 5 - line 51, column 1: " + [ _4.constructor.name ]);
       };
-      return Prelude[">>="](Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad_Reader_Class.ask(Control_Monad_Reader_Trans.monadReaderReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))))(function (r) {
-          var _37 = getPos(lisp);
-          var _38 = r.caret >= _37.value0 && r.caret <= _37.value1;
-          if (_38) {
-              return getCompletion$prime(lisp);
+      var boundsCheck = function (act) {
+          return function (r) {
+              var _41 = getPos(lisp);
+              return Control_Monad.when(Control_Monad_Reader_Trans.monadReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(r.caret >= _41.value0 && r.caret <= _41.value1)(act);
           };
-          if (!_38) {
-              return Prelude["return"](Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
-          };
-          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 37, column 1 - line 38, column 1: " + [ _38.constructor.name ]);
-      });
+      };
+      return Prelude[">>="](Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad_Reader_Class.ask(Control_Monad_Reader_Trans.monadReaderReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))))(boundsCheck(getCompletion$prime(lisp)));
   };
   var runAutocomplete = function (ns) {
       return function (caret) {
           return function (lisp) {
-              return Data_Either.either(Data_Maybe.Just.create)(function (_1) {
+              return Data_Either.either(Data_Maybe.Just.create)(function (_2) {
                   return Data_Maybe.Nothing.value;
               })(Control_Monad_Except.runExcept(Control_Monad_Reader_Trans.runReaderT(getCompletion(lisp))({
                   ns: ns, 
@@ -4842,6 +4858,7 @@ var PS = { };
   };
   exports["NameCompletions"] = NameCompletions;
   exports["ComponentAutocomplete"] = ComponentAutocomplete;
+  exports["ComponentIsComplete"] = ComponentIsComplete;
   exports["ShowError"] = ShowError;
   exports["runAutocomplete"] = runAutocomplete;;
  
