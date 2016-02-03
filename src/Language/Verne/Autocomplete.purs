@@ -3,16 +3,15 @@ module Language.Verne.Autocomplete
   , runAutocomplete
   ) where
 
-import Control.Alt
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Except.Trans
 import Control.Monad.Reader.Trans
 
-import Data.Array ((!!), head, filter, length, uncons)
+import Data.Array ((!!), head, filter, length)
 import Data.Either
 import Data.Foreign
-import Data.Identity (Identity(..), runIdentity)
+import Data.Identity (Identity(..))
 import Data.Maybe
 import Data.String (indexOf,toLower)
 import Data.Traversable
@@ -22,7 +21,6 @@ import Language.Verne.TypeChecker
 import Language.Verne.Types
 
 import Prelude
-import Debug.Trace
 
 -- | This module takes care of getting autocomplete data from a typed expression.
 

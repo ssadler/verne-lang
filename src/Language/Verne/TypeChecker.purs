@@ -13,7 +13,6 @@ import Data.Maybe
 
 import Language.Verne.Namespace
 import Language.Verne.Types
-import Language.Verne.Utils
 
 -- | The typed lisp data structure
 data LISP_T a = LIST_T { typ::Type
