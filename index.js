@@ -4488,8 +4488,7 @@ var PS = { };
   var Data_Foreign = PS["Data.Foreign"];
   var Data_Maybe = PS["Data.Maybe"];
   var Language_Verne_Namespace = PS["Language.Verne.Namespace"];
-  var Language_Verne_Types = PS["Language.Verne.Types"];
-  var Language_Verne_Utils = PS["Language.Verne.Utils"];     
+  var Language_Verne_Types = PS["Language.Verne.Types"];     
   var LIST_T = (function () {
       function LIST_T(value0) {
           this.value0 = value0;
@@ -4535,7 +4534,7 @@ var PS = { };
                           if (!_8) {
                               return Data_Maybe.Nothing.value;
                           };
-                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 31, column 1 - line 32, column 1: " + [ _8.constructor.name ]);
+                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ _8.constructor.name ]);
                       });
                   };
               };
@@ -4591,11 +4590,11 @@ var PS = { };
                                           arr: Data_Array[":"](atom)(Data_Array.zipWith(anno)(sig)(_11.value0.tail))
                                       });
                                   };
-                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 31, column 1 - line 32, column 1: " + [ _16.constructor.name ]);
+                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ _16.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 31, column 1 - line 32, column 1: " + [ atom.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ atom.constructor.name ]);
                           };
-                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 31, column 1 - line 32, column 1: " + [ _11.constructor.name ]);
+                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ _11.constructor.name ]);
                       };
                       if (_2 instanceof Language_Verne_Types.ATOM && _2.value1 instanceof Language_Verne_Types.Name) {
                           var ecomp = (function () {
@@ -4613,14 +4612,14 @@ var PS = { };
                                       if (!_27) {
                                           return errExpected(typ)(_26.value0);
                                       };
-                                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 52, column 13 - line 59, column 9: " + [ _27.constructor.name ]);
+                                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 51, column 13 - line 58, column 9: " + [ _27.constructor.name ]);
                                   };
                                   if (_26 instanceof Data_Maybe.Nothing) {
                                       return new Data_Either.Left("Bad component signature");
                                   };
-                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 52, column 13 - line 59, column 9: " + [ _26.constructor.name ]);
+                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 51, column 13 - line 58, column 9: " + [ _26.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 52, column 13 - line 59, column 9: " + [ _25.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 51, column 13 - line 58, column 9: " + [ _25.constructor.name ]);
                           })();
                           return new ATOM_T({
                               typ: typ, 
@@ -4645,7 +4644,7 @@ var PS = { };
                                   };
                                   throw new Error("Failed pattern match: " + [ _34.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 63, column 13 - line 68, column 10: " + [ _33.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 62, column 13 - line 67, column 10: " + [ _33.constructor.name ]);
                           })();
                           return new ATOM_T({
                               typ: typ, 
@@ -4654,7 +4653,7 @@ var PS = { };
                               ecomp: ecomp
                           });
                       };
-                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 31, column 1 - line 32, column 1: " + [ typ.constructor.name, _2.constructor.name ]);
+                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ typ.constructor.name, _2.constructor.name ]);
                   };
               };
               return anno(typ$prime)(lisp);
@@ -4703,7 +4702,6 @@ var PS = { };
   "use strict";
   var Control_Monad_Reader_Class = PS["Control.Monad.Reader.Class"];
   var Control_Monad_Trans = PS["Control.Monad.Trans"];
-  var Control_Alt = PS["Control.Alt"];
   var Control_Monad = PS["Control.Monad"];
   var Control_Monad_Except = PS["Control.Monad.Except"];
   var Control_Monad_Except_Trans = PS["Control.Monad.Except.Trans"];
@@ -4718,8 +4716,7 @@ var PS = { };
   var Language_Verne_Namespace = PS["Language.Verne.Namespace"];
   var Language_Verne_TypeChecker = PS["Language.Verne.TypeChecker"];
   var Language_Verne_Types = PS["Language.Verne.Types"];
-  var Prelude = PS["Prelude"];
-  var Debug_Trace = PS["Debug.Trace"];     
+  var Prelude = PS["Prelude"];     
   var NameCompletions = (function () {
       function NameCompletions(value0) {
           this.value0 = value0;
@@ -4779,14 +4776,14 @@ var PS = { };
           if (_10 instanceof Data_Maybe.Nothing) {
               return Prelude.pure(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
           };
-          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 74, column 1 - line 75, column 1: " + [ _10.constructor.name ]);
+          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 72, column 1 - line 73, column 1: " + [ _10.constructor.name ]);
       };
       if (_9 instanceof Data_Maybe.Nothing) {
           return Prelude.pure(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
       };
-      throw new Error("Failed pattern match at Language.Verne.Autocomplete line 74, column 1 - line 75, column 1: " + [ _9.constructor.name ]);
+      throw new Error("Failed pattern match at Language.Verne.Autocomplete line 72, column 1 - line 73, column 1: " + [ _9.constructor.name ]);
   };
-  var getCompletion$prime$prime = function (atom) {
+  var getCompletion$prime = function (atom) {
       if (atom instanceof Language_Verne_TypeChecker.LIST_T) {
           return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad.when(Control_Monad_Reader_Trans.monadReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Data_Array.length(atom.value0.arr) === 0)(nameCompletions("")(atom.value0.typ)))(function () {
               return Prelude.bind(Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Data_Traversable.sequence(Data_Traversable.traversableArray)(Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude["<$>"](Prelude.functorArray)(getCompletion$prime)(atom.value0.arr)))(function () {
@@ -4809,7 +4806,7 @@ var PS = { };
       };
       throw new Error("Failed pattern match: " + [ atom.constructor.name ]);
   };
-  var getCompletion$prime = function (lisp) {
+  var getCompletion = function (lisp) {
       var getPos = function (_3) {
           if (_3 instanceof Language_Verne_TypeChecker.LIST_T) {
               return _3.value0.pos;
@@ -4817,18 +4814,18 @@ var PS = { };
           if (_3 instanceof Language_Verne_TypeChecker.ATOM_T) {
               return _3.value0.pos;
           };
-          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 46, column 5 - line 47, column 5: " + [ _3.constructor.name ]);
+          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 44, column 5 - line 45, column 5: " + [ _3.constructor.name ]);
       };
       return Prelude[">>="](Control_Monad_Reader_Trans.bindReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity)))(Control_Monad_Reader_Class.ask(Control_Monad_Reader_Trans.monadReaderReaderT(Control_Monad_Except_Trans.monadExceptT(Data_Identity.monadIdentity))))(function (r) {
           var _37 = getPos(lisp);
           var _38 = r.caret >= _37.value0 && r.caret <= _37.value1;
           if (_38) {
-              return getCompletion$prime$prime(lisp);
+              return getCompletion$prime(lisp);
           };
           if (!_38) {
               return Prelude["return"](Control_Monad_Reader_Trans.applicativeReaderT(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity)))(Prelude.unit);
           };
-          throw new Error("Failed pattern match: " + [ _38.constructor.name ]);
+          throw new Error("Failed pattern match at Language.Verne.Autocomplete line 37, column 1 - line 38, column 1: " + [ _38.constructor.name ]);
       });
   };
   var runAutocomplete = function (ns) {
@@ -4836,7 +4833,7 @@ var PS = { };
           return function (lisp) {
               return Data_Either.either(Data_Maybe.Just.create)(function (_1) {
                   return Data_Maybe.Nothing.value;
-              })(Control_Monad_Except.runExcept(Control_Monad_Reader_Trans.runReaderT(getCompletion$prime(lisp))({
+              })(Control_Monad_Except.runExcept(Control_Monad_Reader_Trans.runReaderT(getCompletion(lisp))({
                   ns: ns, 
                   caret: caret
               })));

@@ -34,18 +34,18 @@ data Completion = NameCompletions (Array Component)
 
 -- | Walk the tree until the node where the caret is is found
 -- | then autocomplete based on the available information.
-getCompletion' :: LISP_T Atom -> Autocomplete Unit
-getCompletion' lisp = ask >>=
+getCompletion :: LISP_T Atom -> Autocomplete Unit
+getCompletion lisp = ask >>=
     \r -> case getPos lisp of
                Pos a b -> if r.caret >= a && r.caret <= b
-                       then getCompletion'' lisp
+                       then getCompletion' lisp
                        else return unit
   where
     getPos (LIST_T {pos}) = pos
     getPos (ATOM_T {pos}) = pos
 
-getCompletion'' :: LISP_T Atom -> Autocomplete Unit
-getCompletion'' atom = case atom of
+getCompletion' :: LISP_T Atom -> Autocomplete Unit
+getCompletion' atom = case atom of
     LIST_T {typ,arr} -> do
         -- When the list is empty, get completions for top type
         when (length arr == 0) (nameCompletions "" typ)
@@ -98,7 +98,7 @@ nameCompletions name typ = do
 
 runAutocomplete :: Namespace -> Int -> LISP_T Atom -> Maybe Completion
 runAutocomplete ns caret lisp = either Just (\_ -> Nothing) $
-     runExcept $ runReaderT (getCompletion' lisp) {ns,caret}
+     runExcept $ runReaderT (getCompletion lisp) {ns,caret}
  
 complete :: Completion -> Autocomplete Unit
 complete = lift <<< except <<< Left
