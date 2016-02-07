@@ -37,7 +37,7 @@ parseArg = parseAtom <|> parseParens
     a <- getPos
     args <- char '(' *> skipSpaces *> parseArgs
     b <- (eof *> pure maxpos) <|> (char ')' *> getPos)
-    pure $ LIST (Pos a b) args
+    pure $ LIST (Pos {a,b}) args
   parseAtom = parseStr <|> parseName
 
 parseName :: Parser (LISP Pos Atom)
@@ -56,14 +56,15 @@ parseStr = do
   char '"'
   str <- many $ satisfy $ (not <<< (=='"'))
   b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
-  pure $ ATOM (Pos a b) (Str (fromCharArray (fromList str)))
+  let pos = Pos {a,b}
+  pure $ ATOM pos (Str (fromCharArray (fromList str)))
 
 codePos :: forall b. Parser (Pos -> LISP Pos b) -> Parser (LISP Pos b)
 codePos p = do
   a <- getPos
   f <- p
   b <- getPos
-  pure $ f $ Pos a b
+  pure $ f $ Pos {a,b}
 
 parse :: String -> ParseResult (LISP Pos Atom)
 parse input =
@@ -71,7 +72,8 @@ parse input =
   where
     onErr pos (ParseError err) = Failure pos err
     onErr pos EndOfInput       = Failure pos "EndOfInput"
-    parseCode = LIST <$> (Pos <$> getPos <*> pure maxpos) <*> parseArgs
+    parseCode = LIST <$> thePos <*> parseArgs
+    thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
 
 checkSuccess :: LISP Pos Atom -> PosString -> ParseResult (LISP Pos Atom)
 checkSuccess a _ = dive a

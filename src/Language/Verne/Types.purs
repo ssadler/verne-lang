@@ -36,7 +36,7 @@ instance showLISP :: (Show a, Show b, Generic a, Generic b) => Show (LISP a b)
 
 -- | Byte offset specifier
 --
-data Pos = Pos Int Int
+newtype Pos = Pos {a::Int,b::Int}
 
 derive instance genericPos :: Generic Pos
 instance eqPos :: Eq Pos where eq = gEq
