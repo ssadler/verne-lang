@@ -15,6 +15,8 @@ import Language.Verne.Namespace
 import Language.Verne.Types
 
 -- | The typed lisp data structure
+
+
 data LISP_T a = LIST_T { typ::Type
                        , pos::Pos
                        , merr::Maybe Error
@@ -27,10 +29,10 @@ data LISP_T a = LIST_T { typ::Type
                        }
 
 -- todo: typed errors
-typeLisp :: Namespace -> Type -> LISP Pos Atom -> LISP_T Atom
+typeLisp :: Namespace -> Type -> AST -> LISP_T Atom
 typeLisp ns typ' lisp = anno typ' lisp
   where
-    anno :: Type -> LISP Pos Atom -> LISP_T Atom
+    anno :: Type -> AST -> LISP_T Atom
     anno typ (LIST pos arr) = case uncons arr of
         Nothing -> LIST_T {typ, pos, merr:(Just "Empty expression not allowed"), arr:[]}
         Just { head: x, tail: xs } ->
@@ -56,7 +58,6 @@ typeLisp ns typ' lisp = anno typ' lisp
                                               else (errExpected typ t)
                         Nothing -> Left "Bad component signature"
         in ATOM_T {typ, pos, atom, ecomp}
-
 
     anno typ (ATOM pos atom@(Str str)) = 
         let ecomp = if typ == "String"

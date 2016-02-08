@@ -1,5 +1,5 @@
 module Language.Verne.Types
-  ( LISP(..)
+  ( AST(..)
   , Atom(..)
   , Component(..)
   , Error(..)
@@ -23,14 +23,14 @@ import Language.Verne.Utils
 
 -- | Core syntax tree container
 --
-data LISP a b = LIST a (Array (LISP a b)) | ATOM a b
+data AST = LIST Pos (Array AST) | ATOM Pos Atom
 
-derive instance genericLISP :: (Generic a, Generic b) => Generic (LISP a b)
+derive instance genericAST :: Generic AST
 
-instance eqLISP :: (Eq a, Eq b, Generic a, Generic b) => Eq (LISP a b)
+instance eqAST :: Eq AST
   where eq = gEq
 
-instance showLISP :: (Show a, Show b, Generic a, Generic b) => Show (LISP a b)
+instance showAST :: Show AST
   where show = gShow
 
 

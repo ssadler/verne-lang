@@ -3969,30 +3969,6 @@ var PS = { };
       };
       return Failure;
   })();
-  var LIST = (function () {
-      function LIST(value0, value1) {
-          this.value0 = value0;
-          this.value1 = value1;
-      };
-      LIST.create = function (value0) {
-          return function (value1) {
-              return new LIST(value0, value1);
-          };
-      };
-      return LIST;
-  })();
-  var ATOM = (function () {
-      function ATOM(value0, value1) {
-          this.value0 = value0;
-          this.value1 = value1;
-      };
-      ATOM.create = function (value0) {
-          return function (value1) {
-              return new ATOM(value0, value1);
-          };
-      };
-      return ATOM;
-  })();
   var Component = function (x) {
       return x;
   };
@@ -4022,6 +3998,30 @@ var PS = { };
           return new Catch(value0);
       };
       return Catch;
+  })();
+  var LIST = (function () {
+      function LIST(value0, value1) {
+          this.value0 = value0;
+          this.value1 = value1;
+      };
+      LIST.create = function (value0) {
+          return function (value1) {
+              return new LIST(value0, value1);
+          };
+      };
+      return LIST;
+  })();
+  var ATOM = (function () {
+      function ATOM(value0, value1) {
+          this.value0 = value0;
+          this.value1 = value1;
+      };
+      ATOM.create = function (value0) {
+          return function (value1) {
+              return new ATOM(value0, value1);
+          };
+      };
+      return ATOM;
   })();
   var showComponent = new Prelude.Show(function (_5) {
       var f = Prelude["<$>"](Data_Maybe.functorMaybe)(function (_4) {
@@ -4079,13 +4079,13 @@ var PS = { };
       } ]);
   });
   var showPos = new Prelude.Show(Data_Generic.gShow(genericPos));
-  var genericParseResult = function (__dict_Generic_6) {
+  var genericParseResult = function (__dict_Generic_2) {
       return new Data_Generic.Generic(function ($dollarx) {
           if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.Success" && $dollarx.value1.length === 1)) {
-              return Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(Success.create))(Data_Generic.fromSpine(__dict_Generic_6)($dollarx.value1[0](Prelude.unit)));
+              return Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(Success.create))(Data_Generic.fromSpine(__dict_Generic_2)($dollarx.value1[0](Prelude.unit)));
           };
           if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.Partial" && $dollarx.value1.length === 1)) {
-              return Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(Partial.create))(Data_Generic.fromSpine(__dict_Generic_6)($dollarx.value1[0](Prelude.unit)));
+              return Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(Partial.create))(Data_Generic.fromSpine(__dict_Generic_2)($dollarx.value1[0](Prelude.unit)));
           };
           if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.Failure" && $dollarx.value1.length === 2)) {
               return Prelude.apply(Data_Maybe.applyMaybe)(Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(Failure.create))(Data_Generic.fromSpine(Data_Generic.genericInt)($dollarx.value1[0](Prelude.unit))))(Data_Generic.fromSpine(Data_Generic.genericString)($dollarx.value1[1](Prelude.unit)));
@@ -4095,12 +4095,12 @@ var PS = { };
           return new Data_Generic.SigProd("Language.Verne.Types.ParseResult", [ {
               sigConstructor: "Language.Verne.Types.Success", 
               sigValues: [ function ($dollarq_1) {
-                  return Data_Generic.toSignature(__dict_Generic_6)(Data_Generic.anyProxy);
+                  return Data_Generic.toSignature(__dict_Generic_2)(Data_Generic.anyProxy);
               } ]
           }, {
               sigConstructor: "Language.Verne.Types.Partial", 
               sigValues: [ function ($dollarq_1) {
-                  return Data_Generic.toSignature(__dict_Generic_6)(Data_Generic.anyProxy);
+                  return Data_Generic.toSignature(__dict_Generic_2)(Data_Generic.anyProxy);
               } ]
           }, {
               sigConstructor: "Language.Verne.Types.Failure", 
@@ -4113,12 +4113,12 @@ var PS = { };
       }, function ($dollarx) {
           if ($dollarx instanceof Success) {
               return new Data_Generic.SProd("Language.Verne.Types.Success", [ function ($dollarq) {
-                  return Data_Generic.toSpine(__dict_Generic_6)($dollarx.value0);
+                  return Data_Generic.toSpine(__dict_Generic_2)($dollarx.value0);
               } ]);
           };
           if ($dollarx instanceof Partial) {
               return new Data_Generic.SProd("Language.Verne.Types.Partial", [ function ($dollarq) {
-                  return Data_Generic.toSpine(__dict_Generic_6)($dollarx.value0);
+                  return Data_Generic.toSpine(__dict_Generic_2)($dollarx.value0);
               } ]);
           };
           if ($dollarx instanceof Failure) {
@@ -4134,60 +4134,6 @@ var PS = { };
   var showParseResult = function (__dict_Show_0) {
       return function (__dict_Generic_1) {
           return new Prelude.Show(Data_Generic.gShow(genericParseResult(__dict_Generic_1)));
-      };
-  };
-  var genericLISP = function (__dict_Generic_7) {
-      return function (__dict_Generic_8) {
-          return new Data_Generic.Generic(function ($dollarx) {
-              if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.LIST" && $dollarx.value1.length === 2)) {
-                  return Prelude.apply(Data_Maybe.applyMaybe)(Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(LIST.create))(Data_Generic.fromSpine(__dict_Generic_7)($dollarx.value1[0](Prelude.unit))))(Data_Generic.fromSpine(Data_Generic.genericArray(genericLISP(__dict_Generic_7)(__dict_Generic_8)))($dollarx.value1[1](Prelude.unit)));
-              };
-              if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.ATOM" && $dollarx.value1.length === 2)) {
-                  return Prelude.apply(Data_Maybe.applyMaybe)(Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(ATOM.create))(Data_Generic.fromSpine(__dict_Generic_7)($dollarx.value1[0](Prelude.unit))))(Data_Generic.fromSpine(__dict_Generic_8)($dollarx.value1[1](Prelude.unit)));
-              };
-              return Data_Maybe.Nothing.value;
-          }, function ($dollarq) {
-              return new Data_Generic.SigProd("Language.Verne.Types.LISP", [ {
-                  sigConstructor: "Language.Verne.Types.LIST", 
-                  sigValues: [ function ($dollarq_1) {
-                      return Data_Generic.toSignature(__dict_Generic_8)(Data_Generic.anyProxy);
-                  }, function ($dollarq_1) {
-                      return Data_Generic.toSignature(Data_Generic.genericArray(genericLISP(__dict_Generic_8)(__dict_Generic_7)))(Data_Generic.anyProxy);
-                  } ]
-              }, {
-                  sigConstructor: "Language.Verne.Types.ATOM", 
-                  sigValues: [ function ($dollarq_1) {
-                      return Data_Generic.toSignature(__dict_Generic_8)(Data_Generic.anyProxy);
-                  }, function ($dollarq_1) {
-                      return Data_Generic.toSignature(__dict_Generic_7)(Data_Generic.anyProxy);
-                  } ]
-              } ]);
-          }, function ($dollarx) {
-              if ($dollarx instanceof LIST) {
-                  return new Data_Generic.SProd("Language.Verne.Types.LIST", [ function ($dollarq) {
-                      return Data_Generic.toSpine(__dict_Generic_7)($dollarx.value0);
-                  }, function ($dollarq) {
-                      return Data_Generic.toSpine(Data_Generic.genericArray(genericLISP(__dict_Generic_7)(__dict_Generic_8)))($dollarx.value1);
-                  } ]);
-              };
-              if ($dollarx instanceof ATOM) {
-                  return new Data_Generic.SProd("Language.Verne.Types.ATOM", [ function ($dollarq) {
-                      return Data_Generic.toSpine(__dict_Generic_7)($dollarx.value0);
-                  }, function ($dollarq) {
-                      return Data_Generic.toSpine(__dict_Generic_8)($dollarx.value1);
-                  } ]);
-              };
-              throw new Error("Failed pattern match: " + [ $dollarx.constructor.name ]);
-          });
-      };
-  };
-  var showLISP = function (__dict_Show_2) {
-      return function (__dict_Show_3) {
-          return function (__dict_Generic_4) {
-              return function (__dict_Generic_5) {
-                  return new Prelude.Show(Data_Generic.gShow(genericLISP(__dict_Generic_4)(__dict_Generic_5)));
-              };
-          };
       };
   };
   var genericAtom = new Data_Generic.Generic(function ($dollarx) {
@@ -4237,19 +4183,52 @@ var PS = { };
       throw new Error("Failed pattern match at Language.Verne.Types line 50, column 1 - line 51, column 1: " + [ $dollarx.constructor.name ]);
   });
   var showAtom = new Prelude.Show(Data_Generic.gShow(genericAtom));
-  var eqPos = new Prelude.Eq(Data_Generic.gEq(genericPos));
-  var eqParseResult = function (__dict_Eq_9) {
-      return function (__dict_Generic_10) {
-          return new Prelude.Eq(Data_Generic.gEq(genericParseResult(__dict_Generic_10)));
+  var genericAST = new Data_Generic.Generic(function ($dollarx) {
+      if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.LIST" && $dollarx.value1.length === 2)) {
+          return Prelude.apply(Data_Maybe.applyMaybe)(Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(LIST.create))(Data_Generic.fromSpine(genericPos)($dollarx.value1[0](Prelude.unit))))(Data_Generic.fromSpine(Data_Generic.genericArray(genericAST))($dollarx.value1[1](Prelude.unit)));
       };
-  };
-  var eqLISP = function (__dict_Eq_11) {
-      return function (__dict_Eq_12) {
-          return function (__dict_Generic_13) {
-              return function (__dict_Generic_14) {
-                  return new Prelude.Eq(Data_Generic.gEq(genericLISP(__dict_Generic_13)(__dict_Generic_14)));
-              };
-          };
+      if ($dollarx instanceof Data_Generic.SProd && ($dollarx.value0 === "Language.Verne.Types.ATOM" && $dollarx.value1.length === 2)) {
+          return Prelude.apply(Data_Maybe.applyMaybe)(Prelude.apply(Data_Maybe.applyMaybe)(new Data_Maybe.Just(ATOM.create))(Data_Generic.fromSpine(genericPos)($dollarx.value1[0](Prelude.unit))))(Data_Generic.fromSpine(genericAtom)($dollarx.value1[1](Prelude.unit)));
+      };
+      return Data_Maybe.Nothing.value;
+  }, function ($dollarq) {
+      return new Data_Generic.SigProd("Language.Verne.Types.AST", [ {
+          sigConstructor: "Language.Verne.Types.LIST", 
+          sigValues: [ function ($dollarq_1) {
+              return Data_Generic.toSignature(genericPos)(Data_Generic.anyProxy);
+          }, function ($dollarq_1) {
+              return Data_Generic.toSignature(Data_Generic.genericArray(genericAST))(Data_Generic.anyProxy);
+          } ]
+      }, {
+          sigConstructor: "Language.Verne.Types.ATOM", 
+          sigValues: [ function ($dollarq_1) {
+              return Data_Generic.toSignature(genericPos)(Data_Generic.anyProxy);
+          }, function ($dollarq_1) {
+              return Data_Generic.toSignature(genericAtom)(Data_Generic.anyProxy);
+          } ]
+      } ]);
+  }, function ($dollarx) {
+      if ($dollarx instanceof LIST) {
+          return new Data_Generic.SProd("Language.Verne.Types.LIST", [ function ($dollarq) {
+              return Data_Generic.toSpine(genericPos)($dollarx.value0);
+          }, function ($dollarq) {
+              return Data_Generic.toSpine(Data_Generic.genericArray(genericAST))($dollarx.value1);
+          } ]);
+      };
+      if ($dollarx instanceof ATOM) {
+          return new Data_Generic.SProd("Language.Verne.Types.ATOM", [ function ($dollarq) {
+              return Data_Generic.toSpine(genericPos)($dollarx.value0);
+          }, function ($dollarq) {
+              return Data_Generic.toSpine(genericAtom)($dollarx.value1);
+          } ]);
+      };
+      throw new Error("Failed pattern match: " + [ $dollarx.constructor.name ]);
+  });
+  var showAST = new Prelude.Show(Data_Generic.gShow(genericAST));
+  var eqPos = new Prelude.Eq(Data_Generic.gEq(genericPos));
+  var eqParseResult = function (__dict_Eq_3) {
+      return function (__dict_Generic_4) {
+          return new Prelude.Eq(Data_Generic.gEq(genericParseResult(__dict_Generic_4)));
       };
   };
   var eqComponent = new Prelude.Eq(function (_6) {
@@ -4258,6 +4237,7 @@ var PS = { };
       };
   });
   var eqAtom = new Prelude.Eq(Data_Generic.gEq(genericAtom));
+  var eqAST = new Prelude.Eq(Data_Generic.gEq(genericAST));
   var componentIsForeign = new Data_Foreign_Class.IsForeign(function (fo) {
       return Prelude["<$>"](Data_Either.functorEither)(Component)(Prelude["<*>"](Data_Either.applyEither)(Prelude["<*>"](Data_Either.applyEither)(Prelude["<*>"](Data_Either.applyEither)(Prelude["<$>"](Data_Either.functorEither)(function (_0) {
           return function (_1) {
@@ -4284,9 +4264,9 @@ var PS = { };
   exports["Catch"] = Catch;
   exports["LIST"] = LIST;
   exports["ATOM"] = ATOM;
-  exports["genericLISP"] = genericLISP;
-  exports["eqLISP"] = eqLISP;
-  exports["showLISP"] = showLISP;
+  exports["genericAST"] = genericAST;
+  exports["eqAST"] = eqAST;
+  exports["showAST"] = showAST;
   exports["genericPos"] = genericPos;
   exports["eqPos"] = eqPos;
   exports["showPos"] = showPos;
@@ -4425,7 +4405,7 @@ var PS = { };
                           if (!_8) {
                               return Data_Maybe.Nothing.value;
                           };
-                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ _8.constructor.name ]);
+                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 32, column 1 - line 33, column 1: " + [ _8.constructor.name ]);
                       });
                   };
               };
@@ -4481,11 +4461,11 @@ var PS = { };
                                           arr: Data_Array[":"](atom)(Data_Array.zipWith(anno)(sig)(_11.value0.tail))
                                       });
                                   };
-                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ _16.constructor.name ]);
+                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 32, column 1 - line 33, column 1: " + [ _16.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ atom.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 32, column 1 - line 33, column 1: " + [ atom.constructor.name ]);
                           };
-                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ _11.constructor.name ]);
+                          throw new Error("Failed pattern match at Language.Verne.TypeChecker line 32, column 1 - line 33, column 1: " + [ _11.constructor.name ]);
                       };
                       if (_2 instanceof Language_Verne_Types.ATOM && _2.value1 instanceof Language_Verne_Types.Name) {
                           var ecomp = (function () {
@@ -4503,14 +4483,14 @@ var PS = { };
                                       if (!_27) {
                                           return errExpected(typ)(_26.value0);
                                       };
-                                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 51, column 13 - line 58, column 9: " + [ _27.constructor.name ]);
+                                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 53, column 13 - line 60, column 9: " + [ _27.constructor.name ]);
                                   };
                                   if (_26 instanceof Data_Maybe.Nothing) {
                                       return new Data_Either.Left("Bad component signature");
                                   };
-                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 51, column 13 - line 58, column 9: " + [ _26.constructor.name ]);
+                                  throw new Error("Failed pattern match at Language.Verne.TypeChecker line 53, column 13 - line 60, column 9: " + [ _26.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 51, column 13 - line 58, column 9: " + [ _25.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 53, column 13 - line 60, column 9: " + [ _25.constructor.name ]);
                           })();
                           return new ATOM_T({
                               typ: typ, 
@@ -4535,7 +4515,7 @@ var PS = { };
                                   };
                                   throw new Error("Failed pattern match: " + [ _34.constructor.name ]);
                               };
-                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 62, column 13 - line 67, column 10: " + [ _33.constructor.name ]);
+                              throw new Error("Failed pattern match at Language.Verne.TypeChecker line 63, column 13 - line 68, column 10: " + [ _33.constructor.name ]);
                           })();
                           return new ATOM_T({
                               typ: typ, 
@@ -4544,7 +4524,7 @@ var PS = { };
                               ecomp: ecomp
                           });
                       };
-                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 30, column 1 - line 31, column 1: " + [ typ.constructor.name, _2.constructor.name ]);
+                      throw new Error("Failed pattern match at Language.Verne.TypeChecker line 32, column 1 - line 33, column 1: " + [ typ.constructor.name, _2.constructor.name ]);
                   };
               };
               return anno(typ$prime)(lisp);
@@ -4664,7 +4644,7 @@ var PS = { };
       if (_3 instanceof Language_Verne_TypeChecker.ATOM_T) {
           return _3.value0.pos;
       };
-      throw new Error("Failed pattern match at Language.Verne.Completions line 128, column 1 - line 129, column 1: " + [ _3.constructor.name ]);
+      throw new Error("Failed pattern match at Language.Verne.Completions line 132, column 1 - line 133, column 1: " + [ _3.constructor.name ]);
   };
   var complete = function (_51) {
       return Control_Monad_Except.except(Data_Either.Left.create(_51));
@@ -4677,7 +4657,7 @@ var PS = { };
           if (_2.autocomplete instanceof Data_Maybe.Just) {
               return complete(result(getPos(r.lisp))(new ComponentAutocomplete(_2)));
           };
-          throw new Error("Failed pattern match at Language.Verne.Completions line 101, column 1 - line 102, column 1: " + [ _2.autocomplete.constructor.name ]);
+          throw new Error("Failed pattern match at Language.Verne.Completions line 105, column 1 - line 106, column 1: " + [ _2.autocomplete.constructor.name ]);
       };
   };
   var completionWidget = function (r) {
@@ -4702,35 +4682,34 @@ var PS = { };
       return function (arr) {
           var offset = Data_Array.length(arr);
           var _18 = Data_Array.head(arr);
-          if (_18 instanceof Data_Maybe.Nothing) {
-              return Prelude.pure(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity))(Prelude.unit);
-          };
           if (_18 instanceof Data_Maybe.Just && (_18.value0 instanceof Language_Verne_TypeChecker.ATOM_T && _18.value0.value0.ecomp instanceof Data_Either.Right)) {
-              var _19 = Data_Array["!!"](_18.value0.value0.ecomp.value0.signature)(offset);
-              if (_19 instanceof Data_Maybe.Nothing) {
-                  return Prelude.pure(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity))(Prelude.unit);
-              };
-              if (_19 instanceof Data_Maybe.Just) {
-                  var caretPos = {
-                      a: r.caret, 
-                      b: r.caret
+              return Prelude.bind(Control_Monad_Except_Trans.bindExceptT(Data_Identity.monadIdentity))(componentAutocomplete(r)(_18.value0.value0.ecomp.value0))(function () {
+                  var _19 = Data_Array["!!"](_18.value0.value0.ecomp.value0.signature)(offset);
+                  if (_19 instanceof Data_Maybe.Nothing) {
+                      return Prelude.pure(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity))(Prelude.unit);
                   };
-                  return onLeft(function (_0) {
-                      var _21 = {};
-                      for (var _22 in _0) {
-                          if (_0.hasOwnProperty(_22)) {
-                              _21[_22] = _0[_22];
-                          };
+                  if (_19 instanceof Data_Maybe.Just) {
+                      var caretPos = {
+                          a: r.caret, 
+                          b: r.caret
                       };
-                      _21.pos = caretPos;
-                      return _21;
-                  })(Prelude.bind(Control_Monad_Except_Trans.bindExceptT(Data_Identity.monadIdentity))(completionWidget(r)(_19.value0))(function () {
-                      return findCompletions(r)("")(_19.value0);
-                  }));
-              };
-              throw new Error("Failed pattern match at Language.Verne.Completions line 82, column 1 - line 83, column 1: " + [ _19.constructor.name ]);
+                      return onLeft(function (_0) {
+                          var _21 = {};
+                          for (var _22 in _0) {
+                              if (_0.hasOwnProperty(_22)) {
+                                  _21[_22] = _0[_22];
+                              };
+                          };
+                          _21.pos = caretPos;
+                          return _21;
+                      })(Prelude.bind(Control_Monad_Except_Trans.bindExceptT(Data_Identity.monadIdentity))(completionWidget(r)(_19.value0))(function () {
+                          return findCompletions(r)("")(_19.value0);
+                      }));
+                  };
+                  throw new Error("Failed pattern match at Language.Verne.Completions line 83, column 1 - line 84, column 1: " + [ _19.constructor.name ]);
+              });
           };
-          throw new Error("Failed pattern match at Language.Verne.Completions line 82, column 1 - line 83, column 1: " + [ _18.constructor.name ]);
+          return Prelude.pure(Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity))(Prelude.unit);
       };
   };
   var findCompletion$prime = function (r) {
@@ -4753,12 +4732,10 @@ var PS = { };
           });
       };
       if (r.lisp instanceof Language_Verne_TypeChecker.ATOM_T && r.lisp.value0.ecomp instanceof Data_Either.Right) {
-          return Prelude.bind(Control_Monad_Except_Trans.bindExceptT(Data_Identity.monadIdentity))(componentAutocomplete(r)(r.lisp.value0.ecomp.value0))(function () {
-              if (r.lisp.value0.atom instanceof Language_Verne_Types.Name) {
-                  return findCompletions(r)(r.lisp.value0.atom.value0)(r.lisp.value0.typ);
-              };
-              return Prelude["return"](Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity))(Prelude.unit);
-          });
+          if (r.lisp.value0.atom instanceof Language_Verne_Types.Name) {
+              return findCompletions(r)(r.lisp.value0.atom.value0)(r.lisp.value0.typ);
+          };
+          return Prelude["return"](Control_Monad_Except_Trans.applicativeExceptT(Data_Identity.applicativeIdentity))(Prelude.unit);
       };
       if (r.lisp instanceof Language_Verne_TypeChecker.ATOM_T && r.lisp.value0.ecomp instanceof Data_Either.Left) {
           return Prelude.bind(Control_Monad_Except_Trans.bindExceptT(Data_Identity.monadIdentity))((function () {

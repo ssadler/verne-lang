@@ -26,11 +26,11 @@ maxpos = 1000000
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
-parseArgs :: Parser (Array (LISP Pos Atom))
+parseArgs :: Parser (Array AST)
 parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
 -- | this thing breaks the rules of not skipping spaces after itself.
-parseArg :: Parser (LISP Pos Atom)
+parseArg :: Parser AST
 parseArg = parseAtom <|> parseParens
   where
   parseParens = fix $ \_ -> do
@@ -40,7 +40,7 @@ parseArg = parseAtom <|> parseParens
     pure $ LIST (Pos {a,b}) args
   parseAtom = parseStr <|> parseName
 
-parseName :: Parser (LISP Pos Atom)
+parseName :: Parser AST
 parseName = codePos $ flip ATOM <$> do
   a <- lowerCaseChar
   rest <- many myAlphaNum
@@ -50,7 +50,7 @@ parseName = codePos $ flip ATOM <$> do
                 || c >= 'A' && c <= 'Z'
                 || c >= '0' && c <= '9' 
 
-parseStr :: Parser (LISP Pos Atom)
+parseStr :: Parser AST
 parseStr = do
   a <- getPos
   char '"'
@@ -59,14 +59,14 @@ parseStr = do
   let pos = Pos {a,b}
   pure $ ATOM pos (Str (fromCharArray (fromList str)))
 
-codePos :: forall b. Parser (Pos -> LISP Pos b) -> Parser (LISP Pos b)
+codePos :: Parser (Pos -> AST) -> Parser AST
 codePos p = do
   a <- getPos
   f <- p
   b <- getPos
   pure $ f $ Pos {a,b}
 
-parse :: String -> ParseResult (LISP Pos Atom)
+parse :: String -> ParseResult AST
 parse input =
     unParser parseCode {str: input, pos: 0} onErr checkSuccess
   where
@@ -75,7 +75,7 @@ parse input =
     parseCode = LIST <$> thePos <*> parseArgs
     thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
 
-checkSuccess :: LISP Pos Atom -> PosString -> ParseResult (LISP Pos Atom)
+checkSuccess :: AST -> PosString -> ParseResult AST
 checkSuccess a _ = dive a
   where
     dive (LIST _ arr) = case last arr of

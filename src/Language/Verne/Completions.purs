@@ -1,5 +1,6 @@
 module Language.Verne.Completions
-  ( Completion(..)
+  ( Autocomplete(..)
+  , Completion(..)
   , CompletionResult(..)
   , getCompletion
   ) where
@@ -59,7 +60,7 @@ findCompletion' r = case r.lisp of
 
     ATOM_T {typ,atom,ecomp=(Right component)} -> do
         -- Has component autocomplete?
-        componentAutocomplete r component
+        --componentAutocomplete r component
 
         -- Component is complete.
         case atom of (Name name) -> findCompletions r name typ
@@ -82,9 +83,11 @@ onLeft f a = except $ case runExcept a of
 completeNextArg :: Context -> Array (LISP_T Atom) -> Autocomplete Unit
 completeNextArg r arr = do
     let offset = length arr
-    case head arr of 
-        Nothing -> pure unit
-        Just (ATOM_T {ecomp=(Right (Component comp))}) ->
+    case head arr of
+        Just (ATOM_T {ecomp=(Right (Component comp))}) -> do
+            -- First try autocomplete property of the head component
+            componentAutocomplete r (Component comp)
+            -- Then try the long way
             case comp.signature !! offset of
                  Nothing -> pure unit
                  Just typ -> do
@@ -92,6 +95,7 @@ completeNextArg r arr = do
                      onLeft (\(Result cr) -> Result (cr {pos=caretPos})) $ do
                          completionWidget r typ
                          findCompletions r "" typ
+        _ -> pure unit
 
 completionWidget :: Context -> String -> Autocomplete Unit
 completionWidget r name =
