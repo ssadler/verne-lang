@@ -1,5 +1,15 @@
 # Verne Lang
 
-A minimalistic type-checked lisp-like language for the web.
+Verne is a high level, lazy, superficially typed, completion aware langauge for the web.
 
-0.7.6.1
+Features:
+
+* Simple, LISP-like syntax with extensible literals.
+* Powerful built-in and extensible autocomplete.
+* Component market (think Wordpress).
+* Internal bigdata architecture, components support versioned inputs and outputs, automatically memoization.
+* Aimed at content publishers, web designers, social app makers, hackers, data engineers.
+* Persistent; application state versioned and forkable, can also be exported to GIT.
+* Full stack; corresponding serverside application, identity aware, LDAP driven ACL/ACP.
+* App for identity management & chat.
+

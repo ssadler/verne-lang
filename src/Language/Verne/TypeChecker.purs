@@ -61,7 +61,7 @@ typeLisp ns typ' lisp = anno typ' lisp
 
     anno typ (ATOM pos atom@(Str str)) = 
         let ecomp = if typ == "String"
-               then Right $ mkComponant "" ["String"] str
+               then Right $ valueComponent ["String"] str
                else case strConstruct typ str of
                          Nothing -> errExpected typ "String"
                          Just comp -> Right comp
@@ -70,17 +70,11 @@ typeLisp ns typ' lisp = anno typ' lisp
     errExpected typ t = Left $ "Couldn't match expected type " ++ typ ++ " with " ++ t
     errArity name = "Wrong number of arguments for " ++ name
 
-    mkComponant name sig value = Component { name
-                                           , signature: sig
-                                           , autocomplete: Nothing
-                                           , exec: toForeign (\_ -> value)
-                                           }
-
     -- | For objects that can be overloaded by a string
     strConstruct typ str =
         componentByName typ ns >>=
             \(Component c) -> if c.signature == [typ, "String"]
-                                  then Just (mkComponant "" [typ] str)
+                                  then Just (valueComponent [typ] str)
                                   else Nothing
 
 

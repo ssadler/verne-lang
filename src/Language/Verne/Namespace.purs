@@ -30,17 +30,18 @@ componentsByTypeHead typ (Namespace _ byTypeHead) =
 
 
 addComponent :: Foreign -> Namespace -> Either String Namespace
-addComponent f ns =
-    case read f of
+addComponent fo ns =
+  let ef = addComponent' <$> readProp "name" fo <*> read fo
+   in case ef of
          Left err -> Left ("Error importing component: " ++ show err)
-         Right component -> addComponent' component ns
+         Right f  -> f ns
 
 
-addComponent' :: Component -> Namespace -> Either String Namespace
-addComponent' comp@(Component c) (Namespace byName byTH) =
-    if Map.member c.name byName
+addComponent' :: String -> Component -> Namespace -> Either String Namespace
+addComponent' name comp@(Component c) (Namespace byName byTH) =
+    if Map.member name byName
        then Left "Already registered"
        else let addition = Map.singleton (head c.signature) [comp]
                 union = Map.unionWith (++) addition byTH
-            in Right (Namespace (Map.insert c.name comp byName) union)
+            in Right (Namespace (Map.insert name comp byName) union)
 

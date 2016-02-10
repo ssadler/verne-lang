@@ -1,14 +1,21 @@
 module Language.Verne.Program
-  ( Id(..)
-  , Node(..)
+  ( Node(..)
   , Program(..)
   ) where
 
-import Data.List (List(..))
-import Data.Monoid
-import Data.StrMap (StrMap(..), empty, union)
+import Control.Monad.State
 
+import qualified Data.Array as A
+import Data.Either
+import Data.Maybe
+import Data.Monoid
+import Data.StrMap (StrMap(..), empty, singleton, union)
+import Data.Traversable
+import Data.Tuple
+
+import Language.Verne.TypeChecker
 import Language.Verne.Types
+import Language.Verne.Utils
 import Prelude
 
 {-
@@ -24,9 +31,12 @@ TODO: Figure out a way to get reliable shared version hashes for components. For
 TODO: Purescript module responsible for creating / validating components.
 -}
 
-type Id = String
+type NodeId = String
 
-newtype Node = Node {comp::Component, inputs::List Id}
+newtype Node = Node {comp::Component, inputs::Array String}
+
+instance hashNode :: Hashable Node where
+  hash (Node {comp=Component c,inputs}) = hashMany ([c.id] ++ inputs)
 
 newtype Program = Program
   { nodes :: StrMap Node
@@ -39,7 +49,23 @@ instance monoidProgram :: Monoid Program where
   mempty = Program {nodes:empty}
 
 
---getNodeId :: Node -> Id
+fromLISP :: LISP_T Atom -> Program -> Tuple NodeId Program
+fromLISP lisp st = runState (fromLISP' lisp) st
 
---fromLISP :: LISP_T -> Program -> Program
---fromLISP = do
+
+fromLISP' :: LISP_T Atom -> State Program NodeId
+fromLISP' (LIST_T {typ,pos,arr,merr=Nothing}) =
+  case A.uncons arr of
+    Just {head=(ATOM_T {ecomp=Right comp}),tail} -> do
+      inputs <- traverse fromLISP' tail
+      let node = Node {comp,inputs}
+          nid = hash node
+      modify (\p -> p <> Program {nodes:singleton nid node})
+      pure nid
+
+fromLISP' (ATOM_T {typ,pos,atom,ecomp=Right comp}) = do
+  let node = Node {comp,inputs:mempty}
+      nid = hash node
+  modify (\p -> p <> Program {nodes:singleton nid node})
+  pure nid
+
