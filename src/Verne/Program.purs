@@ -4,6 +4,8 @@ module Language.Verne.Program
   ) where
 
 import Control.Monad.State
+import Control.Monad.Reader.Trans
+
 
 import qualified Data.Array as A
 import Data.Either
@@ -13,6 +15,7 @@ import Data.StrMap (StrMap(..), empty, singleton, union)
 import Data.Traversable
 import Data.Tuple
 
+import Language.Verne.Namespace (Namespace(..))
 import Language.Verne.TypeChecker
 import Language.Verne.Types
 import Language.Verne.Utils
@@ -38,22 +41,27 @@ newtype Node = Node {comp::Component, inputs::Array String}
 instance hashNode :: Hashable Node where
   hash (Node {comp=Component c,inputs}) = hashMany ([c.id] ++ inputs)
 
+-- | A program is a computation cache
+-- | An AST is a source component.
+-- | ASTs may link to each other but may also be fully self contained.
+-- | Being self contained means that an AST may hold it's source code too.
+--
 newtype Program = Program
   { nodes :: StrMap Node
   }
 
 instance semigroupProgram :: Semigroup Program where
-  append (Program p1) (Program p2) = Program {nodes: union p1.nodes p2.nodes}
+  append (Program p1) (Program p2) = Program { nodes: union p1.nodes p2.nodes }
 
 instance monoidProgram :: Monoid Program where
   mempty = Program {nodes:empty}
 
 
-fromLISP :: LISP_T Atom -> Program -> Tuple NodeId Program
+fromLISP :: LISP_T -> Program -> Tuple NodeId Program
 fromLISP lisp st = runState (fromLISP' lisp) st
 
 
-fromLISP' :: LISP_T Atom -> State Program NodeId
+fromLISP' :: LISP_T -> State Program NodeId
 fromLISP' (LIST_T {typ,pos,arr,merr=Nothing}) =
   case A.uncons arr of
     Just {head=(ATOM_T {ecomp=Right comp}),tail} -> do
@@ -69,3 +77,14 @@ fromLISP' (ATOM_T {typ,pos,atom,ecomp=Right comp}) = do
   modify (\p -> p <> Program {nodes:singleton nid node})
   pure nid
 
+
+
+-- | Build program from AST
+--
+type Builder = ReaderT Namespace (State Program)
+
+fromAST :: AST -> Type -> Namespace -> Tuple NodeId Program
+fromAST ast typ ns = runState (runReaderT (fromAST' ast typ) ns) mempty
+
+fromAST' :: AST -> Type -> Builder NodeId
+fromAST' ast typ = pure "a"

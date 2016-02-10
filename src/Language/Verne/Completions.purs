@@ -37,7 +37,7 @@ data Completion = NameCompletions (Array Component)
                 | ComponentAutocomplete Component
                 | ShowError Error
 
-type Context = {lisp::LISP_T Atom,ns::Namespace,caret::Int}
+type Context = {lisp::LISP_T,ns::Namespace,caret::Int}
 
 -- | Walk the tree until the node where the caret is is found
 -- | then autocomplete based on the available information.
@@ -80,7 +80,7 @@ onLeft f a = except $ case runExcept a of
                           b      -> b
 
 -- | Provide completions for next argument
-completeNextArg :: Context -> Array (LISP_T Atom) -> Autocomplete Unit
+completeNextArg :: Context -> Array LISP_T -> Autocomplete Unit
 completeNextArg r arr = do
     let offset = length arr
     case head arr of
@@ -119,7 +119,7 @@ findCompletions r prefix typ =
 --
 -- | Stuff to do with the Autocomplete computation type
 
-getCompletion :: Namespace -> Int -> LISP_T Atom -> Maybe CompletionResult
+getCompletion :: Namespace -> Int -> LISP_T -> Maybe CompletionResult
 getCompletion ns caret lisp = either Just (\_ -> Nothing) $
     runExcept (findCompletion {lisp,ns,caret})
  
@@ -129,7 +129,7 @@ complete = except <<< Left
 result :: Pos -> Completion -> CompletionResult
 result p c = Result {pos:p,completion:c}
 
-getPos :: LISP_T Atom -> Pos
+getPos :: LISP_T -> Pos
 getPos (LIST_T {pos=p}) = p
 getPos (ATOM_T {pos=p}) = p
 

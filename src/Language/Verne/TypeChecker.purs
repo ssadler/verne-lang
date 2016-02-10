@@ -17,22 +17,22 @@ import Language.Verne.Types
 -- | The typed lisp data structure
 
 
-data LISP_T a = LIST_T { typ::Type
-                       , pos::Pos
-                       , merr::Maybe Error
-                       , arr::Array (LISP_T a)
-                       }
-              | ATOM_T { typ::Type
-                       , pos::Pos
-                       , atom::a
-                       , ecomp::Either Error Component
-                       }
+data LISP_T = LIST_T { typ::Type
+                     , pos::Pos
+                     , merr::Maybe Error
+                     , arr::Array LISP_T
+                     }
+            | ATOM_T { typ::Type
+                     , pos::Pos
+                     , atom::Atom
+                     , ecomp::Either Error Component
+                     }
 
 -- todo: typed errors
-typeLisp :: Namespace -> Type -> AST -> LISP_T Atom
+typeLisp :: Namespace -> Type -> AST -> LISP_T
 typeLisp ns typ' lisp = anno typ' lisp
   where
-    anno :: Type -> AST -> LISP_T Atom
+    anno :: Type -> AST -> LISP_T
     anno typ (LIST pos arr) = case uncons arr of
         Nothing -> LIST_T {typ, pos, merr:(Just "Empty expression not allowed"), arr:[]}
         Just { head: x, tail: xs } ->
@@ -78,7 +78,7 @@ typeLisp ns typ' lisp = anno typ' lisp
                                   else Nothing
 
 
-instance eqLISP_T :: (Eq a) => Eq (LISP_T a) where
+instance eqLISP_T :: Eq LISP_T where
     eq (LIST_T {typ,pos,merr,arr}) (LIST_T {typ=typ2,pos=pos2,merr=merr2,arr=arr2}) =
         typ == typ2 && pos == pos2 && merr == merr2 && arr == arr2
     eq (ATOM_T {typ,pos,atom,ecomp}) (ATOM_T {typ=typ2,pos=pos2,atom=atom2,ecomp=ecomp2}) =
@@ -86,7 +86,7 @@ instance eqLISP_T :: (Eq a) => Eq (LISP_T a) where
     eq (LIST_T _) (ATOM_T _) = false
     eq (ATOM_T _) (LIST_T _) = false
 
-instance showLISP_T :: (Show a) => Show (LISP_T a) where
+instance showLISP_T :: Show LISP_T where
     show (LIST_T {typ,pos,merr,arr}) =
         "LIST_T {" <> typ <> "," <> show pos <> "," <> show merr <> "," <> show arr <> "}"
     show (ATOM_T {typ,pos,atom,ecomp}) =
