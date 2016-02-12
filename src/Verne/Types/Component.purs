@@ -1,5 +1,6 @@
-module Language.Verne.Types.Component
+module Verne.Types.Component
   ( Component(..)
+  , nullComponent
   , valueComponent
   ) where
 
@@ -8,9 +9,8 @@ import Data.Foreign.Class
 import Data.Foreign.NullOrUndefined
 import Data.Maybe
 
-import Language.Verne.Types.Core
-import Language.Verne.Types.Hashable
-import Language.Verne.Utils
+import Verne.Types.Hashable
+import Verne.Utils
 
 import Prelude
 
@@ -29,6 +29,15 @@ valueComponent sig value =
             , name: "Anon"
             , signature: sig
             , exec: toForeign (\_ -> value)
+            , autocomplete: Nothing
+            }
+
+nullComponent :: Component
+nullComponent =
+  Component { id: ""
+            , name: "Null"
+            , signature: ["Null"]
+            , exec: toForeign nullValue
             , autocomplete: Nothing
             }
 

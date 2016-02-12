@@ -1,4 +1,4 @@
-module Language.Verne.Utils where
+module Verne.Utils where
 
 import Prelude
 
@@ -11,3 +11,5 @@ foreign import isSame :: forall a. a -> a -> Boolean
 foreign import hashOne :: String -> String
 
 foreign import hashMany :: Array String -> String
+
+foreign import nullValue :: Unit -> Unit

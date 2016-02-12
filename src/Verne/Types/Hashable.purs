@@ -1,10 +1,10 @@
-module Language.Verne.Types.Hashable
+module Verne.Types.Hashable
   ( Hash(..)
   , Hashable
   , hash
   ) where
 
-import Language.Verne.Utils
+import Verne.Utils
 
 import Control.Alt
 import Control.Apply

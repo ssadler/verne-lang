@@ -1,11 +1,14 @@
-module Language.Verne.Parser
-  ( parse
+module Verne.Program.Parser
+  ( module SP
+  , ParseFail(..)
+  , parse
   ) where
 
 import Control.Alt
 import Control.Apply
 
 import Data.Array (last)
+import Data.Either
 import Data.List (List(..), fromList)
 import Data.Maybe (Maybe(..))
 import Data.String (fromCharArray)
@@ -15,8 +18,11 @@ import Prelude
 import Text.Parsing.StringParser hiding (Pos(..))
 import Text.Parsing.StringParser.Combinators
 import Text.Parsing.StringParser.String
+import qualified Text.Parsing.StringParser (ParseError(..)) as SP
 
-import Language.Verne.Types
+import Verne.Types.Program
+
+type ParseFail = {pos::Int, error::ParseError}
 
 -- | Maxpos is a number that's always bigger than another number.
 -- In this case the length of a code expression.  Used to mean "infinity".
@@ -31,21 +37,21 @@ parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
 -- | this thing breaks the rules of not skipping spaces after itself.
 parseArg :: Parser AST
-parseArg = parseAtom <|> parseParens
+parseArg = parseStr <|> parseName <|> parseParens
   where
   parseParens = fix $ \_ -> do
     a <- getPos
     args <- char '(' *> skipSpaces *> parseArgs
     b <- (eof *> pure maxpos) <|> (char ')' *> getPos)
-    pure $ LIST (Pos {a,b}) args
-  parseAtom = parseStr <|> parseName
+    pure $ SList {pos:Pos {a,b},arr:args}
 
 parseName :: Parser AST
-parseName = codePos $ flip ATOM <$> do
+parseName = codePos $ ta <$> do
   a <- lowerCaseChar
   rest <- many myAlphaNum
   pure $ Name $ fromCharArray $ fromList $ Cons a rest
   where
+  ta a b = SAtom {atom:a,pos:b}
   myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
                 || c >= 'A' && c <= 'Z'
                 || c >= '0' && c <= '9' 
@@ -57,7 +63,7 @@ parseStr = do
   str <- many $ satisfy $ (not <<< (=='"'))
   b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
   let pos = Pos {a,b}
-  pure $ ATOM pos (Str (fromCharArray (fromList str)))
+  pure $ SAtom {pos,atom:Str (fromCharArray (fromList str))}
 
 codePos :: Parser (Pos -> AST) -> Parser AST
 codePos p = do
@@ -66,20 +72,11 @@ codePos p = do
   b <- getPos
   pure $ f $ Pos {a,b}
 
-parse :: String -> ParseResult AST
-parse input =
-    unParser parseCode {str: input, pos: 0} onErr checkSuccess
+parse :: String -> Either {pos::Int, error::ParseError} AST
+parse input = unParser parseCode {str: input, pos: 0} onErr onSuccess
   where
-    onErr pos (ParseError err) = Failure pos err
-    onErr pos EndOfInput       = Failure pos "EndOfInput"
-    parseCode = LIST <$> thePos <*> parseArgs
-    thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
+  onSuccess ast _ = Right ast
+  onErr pos error = Left {pos,error}
+  parseCode = SList <$> ({pos:_,arr:_} <$> thePos <*> parseArgs)
+  thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
 
-checkSuccess :: AST -> PosString -> ParseResult AST
-checkSuccess a _ = dive a
-  where
-    dive (LIST _ arr) = case last arr of
-                            Nothing -> Success a
-                            Just lisp -> dive lisp
-    dive (ATOM _ (Catch _)) = Partial a
-    dive (ATOM _ _        ) = Success a
