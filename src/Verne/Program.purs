@@ -5,18 +5,11 @@ module Verne.Program
   ) where
 
 import Control.Monad.State
-import Control.Monad.Reader.Trans
 
-import qualified Data.Array as A
 import Data.Either
 import Data.Maybe
-import Data.Monoid
-import Data.StrMap (StrMap(..), empty, singleton, union)
-import Data.Traversable
-import Data.Tuple
 
 import Verne.Types
-import Verne.Utils
 import Verne.Program.Exec
 import Verne.Program.Compiler
 import Verne.Program.Completions

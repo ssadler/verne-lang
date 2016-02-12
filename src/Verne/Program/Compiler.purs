@@ -7,7 +7,6 @@ import Prelude
 import Data.Array ((:), head, length, replicate, uncons, zipWith)
 import Data.Array.Unsafe (tail)
 import Data.Either
-import Data.Foreign
 import Data.Maybe
 import Data.StrMap (lookup)
 

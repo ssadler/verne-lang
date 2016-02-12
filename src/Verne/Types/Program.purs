@@ -13,20 +13,14 @@ module Verne.Types.Program
 import Control.Monad.State
 import Data.Generic
 import Data.Either
-import Data.Foreign
-import Data.Foreign.Class
 import Data.Maybe
-import Data.Monoid
 import Data.StrMap
 
 import Prelude
 
 import Text.Parsing.StringParser hiding (Pos(..))
 
-import Verne.Utils
-
 import Verne.Types.Component
-import Verne.Types.Hashable
 
 
 -- | Core language types

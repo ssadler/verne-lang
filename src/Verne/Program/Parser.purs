@@ -7,10 +7,8 @@ module Verne.Program.Parser
 import Control.Alt
 import Control.Apply
 
-import Data.Array (last)
 import Data.Either
 import Data.List (List(..), fromList)
-import Data.Maybe (Maybe(..))
 import Data.String (fromCharArray)
 
 import Prelude

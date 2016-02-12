@@ -4,24 +4,18 @@ module Verne.Program.Completions
   , getCompletion
   ) where
 
-import Control.Alt
-import Control.Apply
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Except.Trans
 
-import Data.Array ((!!), drop, head, filter, length, tail)
+import Data.Array (drop, head, filter, length)
 import Data.Either
-import Data.Foreign
-import Data.Identity (Identity(..))
 import Data.Maybe
 import Data.String (indexOf, toLower)
 import Data.Traversable
 
 import Verne.Types
 import Verne.Program.Exec
-
-import Debug.Trace
 
 import Prelude
 

@@ -6,8 +6,6 @@ module Verne.Types.Hashable
 
 import Verne.Utils
 
-import Control.Alt
-import Control.Apply
 import Prelude
 
 type Hash = String
