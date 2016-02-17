@@ -18,16 +18,16 @@ import Prelude
 newtype Component = Component
     { id :: String
     , name :: String
-    , signature :: Array String
     , exec :: Foreign
+    , signature :: Array String
     , autocomplete :: Maybe Foreign
     }
 
-valueComponent :: forall a. (Hashable a) => Array String -> a -> Component
-valueComponent sig value =
+valueComponent :: forall a. (Hashable a) => String -> a -> Component
+valueComponent typ value =
   Component { id: hash value
-            , name: "Anon"
-            , signature: sig
+            , name: dump value
+            , signature: [typ]
             , exec: toForeign (\_ -> value)
             , autocomplete: Nothing
             }
@@ -35,7 +35,7 @@ valueComponent sig value =
 nullComponent :: Component
 nullComponent =
   Component { id: ""
-            , name: "Null"
+            , name: "null"
             , signature: ["Null"]
             , exec: toForeign nullValue
             , autocomplete: Nothing

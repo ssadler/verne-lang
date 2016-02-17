@@ -1,6 +1,5 @@
 module Verne.Types.Program
-  ( AST(..)
-  , Atom(..)
+  ( module SC
   , Code(..)
   , Error(..)
   , Namespace(..)
@@ -11,6 +10,7 @@ module Verne.Types.Program
   ) where
 
 import Control.Monad.State
+import Control.Monad.State.Class (get, modify) as SC
 import Data.Generic
 import Data.Either
 import Data.Maybe
@@ -30,56 +30,24 @@ type Type = String
 type Error = String
 
 
--- | Core syntax tree container
---
-derive instance genericAST :: Generic AST
-
-instance eqAST :: Eq AST where eq = gEq
-instance showAST :: Show AST where show = gShow
-
-
 -- | Byte offset specifier
 --
 newtype Pos = Pos {a::Int,b::Int}
 
-derive instance genericPos :: Generic Pos
-instance eqPos :: Eq Pos where eq = gEq
-instance showPos :: Show Pos where show = gShow
 
-
--- | Data definition
+-- | Code Tree
 --
-data Atom = Name String | Str String | Catch ParseError
-
-derive instance genericAtom :: Generic Atom
-instance eqAtom :: Eq Atom where eq = gEq
-instance showAtom :: Show Atom where show = gShow
-
-
--- | Syntax Tree
---
-data AST = SList {pos::Pos, arr::Array AST}
-         | SAtom {pos::Pos, atom::Atom}
-
-
--- | Code tree (Annotated syntax tree)
---
-data Code = List { pos::Pos
-                 , typ::Type
-                 , arr::Array Code
-                 , error::Maybe Error
-                 }
-          | Atom { pos::Pos
-                 , typ::Type
-                 , atom::Atom
-                 , component::Either Error Component
-                 }
+data Code = List { pos::Pos, head::Code, args::Array Code }
+          | Atom { pos::Pos, component::Component }
 
 
 -- | Program monad
 --
 type Program = State ProgramState
 
-newtype ProgramState = PS {namespace::Namespace}
+newtype ProgramState = PS { parsers :: Namespace
+                          , globals :: Namespace
+                          , modules :: Namespace
+                          }
 
 type Namespace = StrMap Component

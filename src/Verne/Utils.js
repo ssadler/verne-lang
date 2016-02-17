@@ -1,5 +1,6 @@
 /* global exports */
 "use strict";
+var icepick = require('icepick');
 
 // module Verne.Utils
 
@@ -9,15 +10,16 @@ exports.compactShow = function(s) { return s.replace(/[A-Z][a-zA-Z0-9_]+\./g, ''
 
 exports.isSame = function(a,b) { return a === b }
 
-var cryptoJs = require('crypto-js');
-
 exports.hashOne = function(s) { return exports.hashParts([s]) };
 
 exports.nullValue = function(_) { return null; }
 
+exports.freeze = function(v) { icepick.freeze(v); }
+
 /*
  * Hash an array in a non collidable way
  */
+var cryptoJs = require('crypto-js');
 exports.hashMany = function(args) {
     var s = cryptoJs.SHA256();
     s.extend(arguments.length.toString());
@@ -28,3 +30,12 @@ exports.hashMany = function(args) {
     });
     return s.toString();
 }
+
+
+exports.curryForeign = function(exec1, exec2) {
+    return function() {
+        var args = [exec2()];
+        args.push.apply(args, arguments);
+        return exec1.apply(this, args);
+    };
+};

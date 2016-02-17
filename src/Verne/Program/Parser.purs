@@ -6,6 +6,7 @@ module Verne.Program.Parser
 
 import Control.Alt
 import Control.Apply
+import Control.Monad.Except.Trans
 
 import Data.Either
 import Data.List (List(..), fromList)
@@ -19,62 +20,58 @@ import Text.Parsing.StringParser.String
 import qualified Text.Parsing.StringParser (ParseError(..)) as SP
 
 import Verne.Types.Program
+import Verne.Types.Component
 
 type ParseFail = {pos::Int, error::ParseError}
 
+
 -- | Maxpos is a number that's always bigger than another number.
--- In this case the length of a code expression.  Used to mean "infinity".
+-- In this case the length of a code expression. Used to mean "infinity".
 maxpos :: Int
 maxpos = 1000000
 
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
-parseArgs :: Parser (Array AST)
-parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
-
--- | this thing breaks the rules of not skipping spaces after itself.
-parseArg :: Parser AST
-parseArg = parseStr <|> parseName <|> parseParens
+parseCode :: ProgramState -> Parser Code
+parseCode st =
+  List <$> ({pos:_,head:_,args:_}
+         <$> thePos <*> parseArg <*> parseArgs)
   where
+  thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
+
+  parseParens :: Parser Code
   parseParens = fix $ \_ -> do
-    a <- getPos
-    args <- char '(' *> skipSpaces *> parseArgs
+    a <- getPos <* char '(' <* skipSpaces
+    head <- parseArg <* skipSpaces
+    args <- parseArgs <* skipSpaces
     b <- (eof *> pure maxpos) <|> (char ')' *> getPos)
-    pure $ SList {pos:Pos {a,b},arr:args}
+    pure $ List {pos:Pos {a,b},head,args}
 
-parseName :: Parser AST
-parseName = codePos $ ta <$> do
-  a <- lowerCaseChar
-  rest <- many myAlphaNum
-  pure $ Name $ fromCharArray $ fromList $ Cons a rest
-  where
-  ta a b = SAtom {atom:a,pos:b}
-  myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
-                || c >= 'A' && c <= 'Z'
-                || c >= '0' && c <= '9' 
+  parseArgs :: Parser (Array Code)
+  parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
-parseStr :: Parser AST
-parseStr = do
-  a <- getPos
-  char '"'
-  str <- many $ satisfy $ (not <<< (=='"'))
-  b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
-  let pos = Pos {a,b}
-  pure $ SAtom {pos,atom:Str (fromCharArray (fromList str))}
+  parseArg :: Parser Code
+  parseArg = fix $ \_ -> parseParens <|> parseStr
 
-codePos :: Parser (Pos -> AST) -> Parser AST
-codePos p = do
-  a <- getPos
-  f <- p
-  b <- getPos
-  pure $ f $ Pos {a,b}
+  -- TODO: this should live in Verne.Data
+  -- TODO: anything anonymous is fair game for tight compilation.
+  -- TODO: Verne.String exports string functions and parser
+  parseStr :: Parser Code
+  parseStr = do
+    a <- getPos
+    char '"'
+    str <- many $ satisfy $ (not <<< (=='"'))
+    b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
+    let pos = Pos {a,b}
+        component = valueComponent "String" (fromCharArray $ fromList str)
+    pure $ Atom {pos, component}
 
-parse :: String -> Either {pos::Int, error::ParseError} AST
-parse input = unParser parseCode {str: input, pos: 0} onErr onSuccess
+parse :: String -> Program (Either ParseFail Code)
+parse input = do
+  st <- get
+  pure $ unParser (parseCode st) {str: input, pos: 0} onErr onSuccess
   where
   onSuccess ast _ = Right ast
   onErr pos error = Left {pos,error}
-  parseCode = SList <$> ({pos:_,arr:_} <$> thePos <*> parseArgs)
-  thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
 

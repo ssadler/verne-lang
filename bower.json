@@ -20,7 +20,8 @@
     "purescript-foreign": "~0.7.2",
     "purescript-transformers": "~0.8.4",
     "purescript-strings": "~0.7.1",
-    "crypto-js": "~3.1.6"
+    "crypto-js": "~3.1.6",
+    "icepick": "git://github.com/aearly/icepick.git#~1.1.0"
   },
   "devDependencies": {
     "purescript-test-unit": "~4.1.0"
