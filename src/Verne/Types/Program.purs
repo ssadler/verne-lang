@@ -2,7 +2,6 @@ module Verne.Types.Program
   ( module SC
   , Code(..)
   , Error(..)
-  , Namespace(..)
   , Pos(..)
   , Program(..)
   , ProgramState(..)
@@ -21,7 +20,7 @@ import Prelude
 import Text.Parsing.StringParser hiding (Pos(..))
 
 import Verne.Types.Component
-
+import Verne.Data.Namespace
 
 -- | Core language types
 --
@@ -32,7 +31,7 @@ type Error = String
 
 -- | Byte offset specifier
 --
-newtype Pos = Pos {a::Int,b::Int}
+type Pos = {a::Int,b::Int}
 
 
 -- | Code Tree
@@ -50,4 +49,3 @@ newtype ProgramState = PS { parsers :: Namespace
                           , modules :: Namespace
                           }
 
-type Namespace = StrMap Component

@@ -23,24 +23,6 @@ newtype Component = Component
     , autocomplete :: Maybe Foreign
     }
 
-valueComponent :: forall a. (Hashable a) => String -> a -> Component
-valueComponent typ value =
-  Component { id: hash value
-            , name: dump value
-            , signature: [typ]
-            , exec: toForeign (\_ -> value)
-            , autocomplete: Nothing
-            }
-
-nullComponent :: Component
-nullComponent =
-  Component { id: ""
-            , name: "null"
-            , signature: ["Null"]
-            , exec: toForeign nullValue
-            , autocomplete: Nothing
-            }
-
 instance componentIsForeign :: IsForeign Component where
     read fo = Component <$> ({id:"", name:_, signature:_, exec:_, autocomplete:_}
                         <$> readProp "name" fo
@@ -61,3 +43,22 @@ instance showComponent :: Show Component where
 
 instance eqComponent :: Eq Component where
     eq (Component c1) (Component c2) = c1.id == c2.id
+
+valueComponent :: forall a. (Hashable a) => String -> a -> Component
+valueComponent typ value =
+  Component { id: hash value
+            , name: dump value
+            , signature: [typ]
+            , exec: toForeign (\_ -> value)
+            , autocomplete: Nothing
+            }
+
+nullComponent :: Component
+nullComponent =
+  Component { id: ""
+            , name: "null"
+            , signature: ["Null"]
+            , exec: toForeign nullValue
+            , autocomplete: Nothing
+            }
+

@@ -10,7 +10,7 @@ exports.compactShow = function(s) { return s.replace(/[A-Z][a-zA-Z0-9_]+\./g, ''
 
 exports.isSame = function(a,b) { return a === b }
 
-exports.hashOne = function(s) { return exports.hashParts([s]) };
+exports.hashOne = function(s) { return exports.hashMany([s]) };
 
 exports.nullValue = function(_) { return null; }
 

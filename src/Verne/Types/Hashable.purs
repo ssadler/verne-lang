@@ -4,6 +4,8 @@ module Verne.Types.Hashable
   , hash
   ) where
 
+import Data.Array
+
 import Verne.Utils
 
 import Prelude
@@ -18,3 +20,6 @@ instance hashString :: Hashable String where
 
 instance hashInt :: Hashable Int where
   hash = hashOne <<< show
+
+instance hashArray :: (Hashable a) => Hashable (Array a) where
+  hash = hashMany <<< map hash

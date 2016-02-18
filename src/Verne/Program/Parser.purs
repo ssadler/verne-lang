@@ -22,6 +22,8 @@ import qualified Text.Parsing.StringParser (ParseError(..)) as SP
 import Verne.Types.Program
 import Verne.Types.Component
 
+import Verne.Data.Namespace
+
 type ParseFail = {pos::Int, error::ParseError}
 
 
@@ -38,7 +40,7 @@ parseCode st =
   List <$> ({pos:_,head:_,args:_}
          <$> thePos <*> parseArg <*> parseArgs)
   where
-  thePos = (\a b -> Pos {a,b}) <$> getPos <*> pure maxpos
+  thePos = (\a b -> {a,b}) <$> getPos <*> pure maxpos
 
   parseParens :: Parser Code
   parseParens = fix $ \_ -> do
@@ -46,13 +48,13 @@ parseCode st =
     head <- parseArg <* skipSpaces
     args <- parseArgs <* skipSpaces
     b <- (eof *> pure maxpos) <|> (char ')' *> getPos)
-    pure $ List {pos:Pos {a,b},head,args}
+    pure $ List {pos:{a,b},head,args}
 
   parseArgs :: Parser (Array Code)
   parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
   parseArg :: Parser Code
-  parseArg = fix $ \_ -> parseParens <|> parseStr
+  parseArg = fix $ \_ -> parseParens <|> parseName <|> parseStr
 
   -- TODO: this should live in Verne.Data
   -- TODO: anything anonymous is fair game for tight compilation.
@@ -63,9 +65,22 @@ parseCode st =
     char '"'
     str <- many $ satisfy $ (not <<< (=='"'))
     b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
-    let pos = Pos {a,b}
+    let pos = {a,b}
         component = valueComponent "String" (fromCharArray $ fromList str)
     pure $ Atom {pos, component}
+
+  parseName :: Parser Code
+  parseName = do
+    a <- getPos
+    chars <- Cons <$> lowerCaseChar <*> many myAlphaNum
+    b <- getPos
+    let name = fromCharArray $ fromList chars
+    pure $ Atom {pos:{a,b},component:nameComponent name}
+    where
+    myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
+                              || c >= 'A' && c <= 'Z'
+                              || c >= '0' && c <= '9' 
+
 
 parse :: String -> Program (Either ParseFail Code)
 parse input = do
