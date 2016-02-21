@@ -1,6 +1,5 @@
 module Verne.Program.Completion
-  ( CompletionResult
-  , getCompletion
+  ( getCompletion
   ) where
 
 import Control.Monad.Except.Trans
@@ -10,35 +9,40 @@ import Data.Either
 import Data.Maybe
 import Data.Traversable
 
+import Verne.Data.Code
+import Verne.Data.Component
 import Verne.Types.Program
+import Verne.Program.Compiler
 
 import Prelude
 
-type Complete = ExceptT CompletionResult Program
+type Complete a = ExceptT Component Program a
 
-data CompletionResult = Completion | NoCompletion
-
-getCompletion :: Int -> Code -> Program CompletionResult
-getCompletion caret code = do
-  o <- runExceptT $ complete caret code
-  case o of
-       Left r -> pure r
-       Right _ -> pure NoCompletion
+getCompletion :: Int -> Code -> Program (Maybe Component)
+getCompletion caret code =
+  either Just (\_ -> Nothing) <$> runExceptT (complete caret code)
 
 complete :: Int -> Code -> Complete Unit
-complete caret (List {pos,head,args}) =
+complete caret code@(List {pos,head,args}) =
   if caret < pos.a || caret > pos.b then pure unit else do
+    case getPos <$> last args of 
+      Just {b} | caret > b + 1 -> completeCompile code
+      _ -> pure unit
     complete caret head
     traverse (complete caret) args
-    case getPos <$> last args of 
-      Just {b} | caret > b + 1 -> completeNextArg caret head args
-      _ -> pure unit
-complete caret (Atom {pos,component}) = 
-  if caret < pos.a || caret > pos.b then pure unit else do
     pure unit
+complete caret code@(Atom {pos,component}) = 
+  if caret < pos.a || caret > pos.b then pure unit else
+    case component of
+      Component {autocomplete=Just _} -> completeCompile code
+      _ -> pure unit
 
-completeNextArg :: Int -> Code -> Array Code -> Complete Unit
-completeNextArg caret head args = pure unit
+completeCompile :: Code -> Complete Unit
+completeCompile code = do
+  ecompiled <- lift (compile code)
+  case ecompiled of
+    Right c@(Component {autocomplete=Just _}) -> ExceptT (pure (Left c))
+    _ -> pure unit
 
 getPos :: Code -> Pos
 getPos (Atom {pos}) = pos
