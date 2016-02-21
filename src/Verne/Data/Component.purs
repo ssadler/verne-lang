@@ -1,4 +1,4 @@
-module Verne.Types.Component
+module Verne.Data.Component
   ( Component(..)
   , nullComponent
   , valueComponent

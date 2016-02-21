@@ -17,3 +17,5 @@ foreign import hashMany :: Array String -> String
 foreign import nullValue :: Unit -> Unit
 
 foreign import curryForeign :: Foreign -> Foreign -> Foreign
+
+foreign import autoCurry :: Foreign -> Foreign -> Foreign

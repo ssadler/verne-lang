@@ -1,8 +1,8 @@
 module Verne.Program.Compiler.Coroutine where
 
 import Prelude
-import Control.Monad.Eff
-import Control.Monad.Eff.Console
+
+import Control.Monad.Trans (MonadTrans, lift)
 
 import Data.Maybe
 
@@ -15,12 +15,18 @@ data Coroutine r m a = Yield (CoT r m a) r | Run a
 mapCoT f (CoT a) = CoT (f a)
 runCoT (CoT a) = a
 
+yield :: forall r m. (Monad m) => r -> CoT r m Unit
+yield = CoT <<< pure <<< Yield (pure unit)
+
 instance fA :: (Functor m) => Functor (Coroutine r m) where
   map f (Run a) = Run (f a)
   map f (Yield cont b) = Yield (map f cont) b
 
 instance fAT :: (Functor m) => Functor (CoT r m) where
   map f = mapCoT ((<$>) ((<$>) f))
+
+instance fMT :: MonadTrans (CoT r) where
+  lift m = CoT $ Run <$> m
 
 instance aA :: (Monad m) => Apply (CoT r m) where
     apply = ap
@@ -37,12 +43,5 @@ instance bA :: (Monad m) => Bind (CoT r m) where
       Run a -> runCoT (f a)
       Yield cont r -> pure (Yield (bind cont f) r)
 
-
 instance mA :: (Monad m) => Monad (CoT r m)
-
--- main :: forall e. Eff (console :: CONSOLE | e) Unit
--- main = case test of
---             Run b -> log b
---             Yield cont a -> case cont of
---                                  Run b -> log b
 

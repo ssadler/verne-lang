@@ -1,6 +1,5 @@
 /* global exports */
 "use strict";
-var icepick = require('icepick');
 
 // module Verne.Utils
 
@@ -14,7 +13,7 @@ exports.hashOne = function(s) { return exports.hashMany([s]) };
 
 exports.nullValue = function(_) { return null; }
 
-exports.freeze = function(v) { icepick.freeze(v); }
+exports.freeze = function(v) { module.require('icepick').freeze(v); }
 
 /*
  * Hash an array in a non collidable way
@@ -31,11 +30,18 @@ exports.hashMany = function(args) {
     return s.toString();
 }
 
-
 exports.curryForeign = function(exec1, exec2) {
     return function() {
         var args = [exec2()];
         args.push.apply(args, arguments);
         return exec1.apply(this, args);
+    };
+};
+
+exports.autoCurry = function(exec, autocomplete) {
+    return function(moreArgs, callback) {
+        var args = [exec()];
+        args.push.apply(args, moreArgs);
+        return autocomplete(args, callback);
     };
 };

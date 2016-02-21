@@ -1,15 +1,23 @@
 module Verne.Data.Namespace 
-  ( Namespace(..)
+  ( module SM
+  , Namespace(..)
   , lookupName
   , nameComponent
+  , nameCompletion
   ) where
 
+import Data.List (List(..), fromList)
 import Data.Foreign
 import Data.Maybe
+import Data.String (fromCharArray)
 import Data.StrMap (StrMap(..), lookup)
-import Verne.Types.Component
+import Data.StrMap (empty, insert) as SM
+
+import Verne.Data.Code
+import Verne.Data.Component
 import Verne.Types.Hashable
 
+import Prelude
 type Namespace = StrMap Component
 
 lookupName :: String -> Namespace -> Maybe Component
@@ -19,9 +27,9 @@ nameComponent :: String -> Component
 nameComponent name =
   Component { id: hash ["Name Component", name]
             , name: name
-            , signature: ["Namespace", "Component"]
+            , signature: ["_lookup"]
             , exec: toForeign (resolveName name)
-            , autocomplete: Just (toForeign nameCompletion)
+            , autocomplete: Nothing
             }
 
 foreign import nameCompletion :: forall a b. a -> b
@@ -38,5 +46,5 @@ cantResolve name =
             , name: ""
             , signature: [""]
             , exec: toForeign (\a -> a)
-            , autocomplete: Nothing
+            , autocomplete: Just (toForeign nameCompletion)
             }

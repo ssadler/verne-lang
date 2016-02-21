@@ -1,6 +1,5 @@
 module Verne.Program.Parser
-  ( module SP
-  , ParseFail(..)
+  ( ParseFail(..)
   , parse
   ) where
 
@@ -8,8 +7,9 @@ import Control.Alt
 import Control.Apply
 import Control.Monad.Except.Trans
 
-import Data.Either
+import Data.Foreign
 import Data.List (List(..), fromList)
+import Data.Either
 import Data.String (fromCharArray)
 
 import Prelude
@@ -17,12 +17,11 @@ import Prelude
 import Text.Parsing.StringParser hiding (Pos(..))
 import Text.Parsing.StringParser.Combinators
 import Text.Parsing.StringParser.String
-import qualified Text.Parsing.StringParser (ParseError(..)) as SP
 
-import Verne.Types.Program
-import Verne.Types.Component
-
+import Verne.Data.Code
+import Verne.Data.Component
 import Verne.Data.Namespace
+import Verne.Types.Program
 
 type ParseFail = {pos::Int, error::ParseError}
 
@@ -35,8 +34,8 @@ maxpos = 1000000
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
-parseCode :: ProgramState -> Parser Code
-parseCode st =
+parseCode :: List (Parser Code) -> Parser Code
+parseCode parsers =
   List <$> ({pos:_,head:_,args:_}
          <$> thePos <*> parseArg <*> parseArgs)
   where
@@ -54,39 +53,39 @@ parseCode st =
   parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
 
   parseArg :: Parser Code
-  parseArg = fix $ \_ -> parseParens <|> parseName <|> parseStr
+  parseArg = fix $ \_ -> parseParens <|> eachParser parsers
 
-  -- TODO: this should live in Verne.Data
-  -- TODO: anything anonymous is fair game for tight compilation.
-  -- TODO: Verne.String exports string functions and parser
-  parseStr :: Parser Code
-  parseStr = do
-    a <- getPos
-    char '"'
-    str <- many $ satisfy $ (not <<< (=='"'))
-    b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
-    let pos = {a,b}
-        component = valueComponent "String" (fromCharArray $ fromList str)
-    pure $ Atom {pos, component}
-
-  parseName :: Parser Code
-  parseName = do
-    a <- getPos
-    chars <- Cons <$> lowerCaseChar <*> many myAlphaNum
-    b <- getPos
-    let name = fromCharArray $ fromList chars
-    pure $ Atom {pos:{a,b},component:nameComponent name}
-    where
-    myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
-                              || c >= 'A' && c <= 'Z'
-                              || c >= '0' && c <= '9' 
-
+  eachParser :: List (Parser Code) -> Parser Code
+  eachParser (Cons x xs) = x <|> eachParser xs
+  eachParser Nil = fail "none shall parse"
 
 parse :: String -> Program (Either ParseFail Code)
 parse input = do
-  st <- get
-  pure $ unParser (parseCode st) {str: input, pos: 0} onErr onSuccess
+  st <- (\(PS s) -> s) <$> get
+  let parsers = Cons parseName (Cons parseString st.parsers)
+  pure $ unParser (parseCode parsers) {str: input, pos: 0} onErr onSuccess
   where
   onSuccess ast _ = Right ast
   onErr pos error = Left {pos,error}
 
+parseName :: Parser Code
+parseName = do
+  a <- getPos
+  chars <- Cons <$> lowerCaseChar <*> many myAlphaNum
+  b <- getPos
+  let name = fromCharArray $ fromList chars
+  pure $ Atom {pos:{a,b},component:nameComponent name}
+  where
+  myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
+                            || c >= 'A' && c <= 'Z'
+                            || c >= '0' && c <= '9'
+
+parseString :: Parser Code
+parseString = do
+  a <- getPos
+  char '"'
+  str <- many $ satisfy $ (not <<< (=='"'))
+  b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
+  let pos = {a,b}
+      component = valueComponent "String" (fromCharArray $ fromList str)
+  pure $ Atom {pos, component}

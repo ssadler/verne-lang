@@ -5,38 +5,82 @@ module Verne.Program.Compiler
 import Control.Monad (when)
 import Control.Monad.Except.Trans
 
-import Data.Array (foldM, drop, take)
+import Data.Array (foldM, drop, last, take)
 import Data.Either
 import Data.Foreign
 import Data.Maybe
+import Data.StrMap (lookup)
 import Data.Traversable
 
 import Prelude
 
-import Verne.Types
+import Verne.Data.Code
+import Verne.Data.Component
+import Verne.Data.Namespace
+import Verne.Program.Compiler.Coroutine
+import Verne.Types.Hashable
+import Verne.Types.Program
 import Verne.Utils
 
-type Compile = ExceptT Error Program
 
-compile :: Code -> Program (Either Error Component)
-compile = runExceptT <<< compile'
+type Compile = CoT (Either Error Component) Program
 
-compile' :: Code -> Compile Component
-compile' (Atom {component=c}) = pure c
-compile' (List {head,args}) = do
-  ch <- compile' head
-  ct <- traverse compile' args
-  foldM curry ch ct
+compile :: Int -> Code -> Program (Coroutine (Either Error Component) Program Component)
+compile caret = runCoT <<< go caret
 
+go :: Int -> Code -> Compile Component
+
+go caret (Atom {pos,component=cl}) = do
+  c <- lift $ resolve cl
+  when (caret >= pos.a && caret <= pos.b)
+       (provideCompletion c)
+  pure c
+
+go caret (List {head,args}) = do
+  ch <- go caret head
+  ct <- traverse (go caret) args
+  com <- foldM curry ch ct
+  case getPos <$> last args of
+    Just {b} | caret > b + 1 -> provideCompletion com
+  pure com
+
+getPos :: Code -> Pos
+getPos (Atom {pos}) = pos
+getPos (List {pos}) = pos
 
 curry :: Component -> Component -> Compile Component
 curry (Component c1) (Component c2) = Component <$> do
   when (take 1 c1.signature /= c2.signature)
-       (ExceptT (pure (Left "curry mismatch")))
+       (yield (Left "curry mismatch"))
   pure { id: hashMany [c1.id, c2.id]
        , name: ""
        , signature: drop 1 c1.signature
        , exec: curryForeign c1.exec c2.exec
-       , autocomplete: Nothing
+       , autocomplete: autoCurry c2.exec <$> c1.autocomplete 
        }
+
+
+provideCompletion :: Component -> Compile Unit
+provideCompletion c@(Component {autocomplete=Just _}) =
+  yield $ Right c
+provideCompletion c = pure unit
+
+-- | Related to component resolution
+--
+resolve :: Component -> Program Component
+resolve (Component {name,signature=["_lookup"]}) = do
+  globals <- get <#> (\(PS {globals}) -> globals)
+  pure $ maybe (cantResolve name) id $ lookup name globals
+resolve c = pure c
+ 
+cantResolve :: String -> Component
+cantResolve name =
+  Component { id : hash ["Can't resolve", name]
+            , name: ""
+            , signature: [""]
+            , exec: toForeign (\a -> a)
+            , autocomplete: Just (toForeign nameCompletion)
+            }
+
+
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bundle": "pulp build --force --modules Verne.Program.Parser,Verne.Program.Compiler --to index.js && echo 'module.exports = PS;' >> index.js"
+    "bundle": "pulp build --force --modules Verne.Program --to index.js && echo 'module.exports = PS;' >> index.js"
   },
   "author": "",
   "license": "ISC"
