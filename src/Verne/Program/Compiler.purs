@@ -5,7 +5,7 @@ module Verne.Program.Compiler
 import Control.Monad (when)
 import Control.Monad.Except.Trans
 
-import Data.Array (foldM, drop, last, take)
+import Data.Array (foldM, drop, last, take, uncons)
 import Data.Either
 import Data.Foreign
 import Data.Maybe
@@ -26,33 +26,39 @@ import Verne.Utils
 type Compile = CoT (Either Error Component) Program
 
 compile :: Int -> Code -> Program (Coroutine (Either Error Component) Program Component)
-compile caret = runCoT <<< go caret
+compile caret = runCoT <<< go caret ["IO ()"]
 
-go :: Int -> Type -> Code -> Compile Component
+go :: Int -> Array Type -> Code -> Compile Component
 go caret typ (Atom {pos,component}) = do
-  c <- lift $ resolve component
+  c <- lift $ resolve typ component
   when (caret >= pos.a && caret <= pos.b)
-       (provideCompletion typ c)
+       (provideCompletion c)
   pure c
 go caret typ (List {head,args}) = do
   ch <- go caret typ head
-  let argtypes = case ch of Component {signature} -> signature
-  ct <- traverse (go caret typ) args
-  com <- foldM curry ch ct
+  com <- curry caret typ ch (uncons args)
   case getPos <$> last args of
     Just {b} | caret > b + 1 -> provideCompletion com
   pure com
 
-curry :: Component -> Component -> Compile Component
-curry (Component c1) (Component c2) = Component <$> do
+
+curry :: Int -> Array Type -> Component
+      -> Maybe {head::Code,tail::Array Code}
+      -> Compile Component
+curry _ _ com Nothing = pure $ com
+curry caret typ (Component c1) (Just {head,tail}) = do
+  arg <- go caret typ head
+  let c2 = case arg of Component c -> c
   when (take 1 c1.signature /= c2.signature)
        (yield (Left "curry mismatch"))
-  pure { id: hashMany [c1.id, c2.id]
-       , name: ""
-       , signature: drop 1 c1.signature
-       , exec: curryForeign c1.exec c2.exec
-       , autocomplete: autoCurry c2.exec <$> c1.autocomplete 
-       }
+  let c3 = { id: hashMany [c1.id, c2.id]
+           , name: ""
+           , signature: drop 1 c1.signature
+           , exec: curryForeign c1.exec c2.exec
+           , autocomplete: autoCurry c2.exec <$> c1.autocomplete 
+           }
+  curry caret typ (Component c3) $ uncons tail
+
 
 provideCompletion :: Component -> Compile Unit
 provideCompletion c@(Component {autocomplete=Just _}) = yield $ Right c
@@ -60,18 +66,19 @@ provideCompletion c = pure unit
 
 -- | Related to component resolution
 --
-resolve :: Component -> Program Component
-resolve (Component {name,signature=["_lookup"]}) = do
+resolve :: Array Type -> Component -> Program Component
+resolve typ (Component {name,signature=["_lookup"]}) = do
   globals <- get <#> (\(PS {globals}) -> globals)
-  pure $ maybe (cantResolve name) id $ lookup name globals
-resolve c = pure c
+  let getOptions = toForeign (\_ -> getNameCompletions typ name globals)
+  pure $ maybe (cantResolve name getOptions) id $ lookup name globals
+resolve _ c = pure c
  
-cantResolve :: String -> Component
-cantResolve name =
-  Component { id : hash ["Can't resolve", name]
+cantResolve :: String -> Foreign -> Component
+cantResolve name exec =
+  Component { id : hash ["nameLookup", name]
             , name: ""
             , signature: [""]
-            , exec: toForeign (\a -> a)
-            , autocomplete: Just (toForeign nameCompletion)
+            , exec: exec
+            , autocomplete: Just (toForeign "names")
             }
 

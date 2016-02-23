@@ -3,15 +3,17 @@ module Verne.Data.Namespace
   , Namespace(..)
   , lookupName
   , nameComponent
-  , nameCompletion
+  , getNameCompletions
   ) where
 
-import Data.List (List(..), fromList)
+import Data.Array (reverse, take)
+import Data.List (List(..), filter, fromList)
 import Data.Foreign
 import Data.Maybe
-import Data.String (fromCharArray)
-import Data.StrMap (StrMap(..), lookup)
+import qualified Data.String (length, take, fromCharArray) as S
+import Data.StrMap (StrMap(..), lookup, toList)
 import Data.StrMap (empty, insert) as SM
+import Data.Tuple (Tuple(..))
 
 import Verne.Data.Code
 import Verne.Data.Component
@@ -28,23 +30,14 @@ nameComponent name =
   Component { id: hash ["Name Component", name]
             , name: name
             , signature: ["_lookup"]
-            , exec: toForeign (resolveName name)
+            , exec: toForeign "none"
             , autocomplete: Nothing
             }
 
-foreign import nameCompletion :: forall a b. a -> b
-
-resolveName :: String -> Namespace -> Component
-resolveName name ns = 
-  case lookupName name ns of
-       Just c -> c
-       Nothing -> cantResolve name
-
-cantResolve :: String -> Component
-cantResolve name =
-  Component { id : hash ["Can't resolve", name]
-            , name: ""
-            , signature: [""]
-            , exec: toForeign (\a -> a)
-            , autocomplete: Just (toForeign nameCompletion)
-            }
+getNameCompletions :: Array String -> String -> Namespace
+                   -> Array (Tuple String Component)
+getNameCompletions typ pref ns = fromList $ filter go $ toList ns
+  where
+  go (Tuple name (Component com)) =
+    (pref == S.take (S.length pref) name) &&
+    typ == (take 1 $ reverse com.signature)
