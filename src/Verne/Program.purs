@@ -35,8 +35,6 @@ program = make { newProgramState
                , parse 
                , compile 
                , addComponent 
-               , maybe
-               , either 
                }
 
 foreign import make :: forall a. {| a} -> Foreign

@@ -1,6 +1,7 @@
 module Verne.Data.Code
   ( Pos(..)
   , Code(..)
+  , getPos
   ) where
 
 import Data.Array
@@ -16,4 +17,6 @@ type Pos = {a::Int,b::Int}
 data Code = List { pos::Pos, head::Code, args::Array Code }
           | Atom { pos::Pos, component::Component }
 
-
+getPos :: Code -> Pos
+getPos (Atom {pos}) = pos
+getPos (List {pos}) = pos

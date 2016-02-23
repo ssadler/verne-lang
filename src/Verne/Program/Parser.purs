@@ -18,7 +18,7 @@ import Text.Parsing.StringParser hiding (Pos(..))
 import Text.Parsing.StringParser.Combinators
 import Text.Parsing.StringParser.String
 
-import Verne.Data.Code
+import Verne.Data.Code hiding (getPos)
 import Verne.Data.Component
 import Verne.Data.Namespace
 import Verne.Types.Program

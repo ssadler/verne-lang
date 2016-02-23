@@ -5,11 +5,10 @@
 
 exports.make = function(ps) {
 
-    var m = function(val) {
-        return ps.maybe(null)(function(v) {return v})(val);
-    }
+    var m = function(val) { return val.value0; }
     var e = function(val) {
-        return ps.either(function(v) {return  {left:v}})(function(v) {return {right:v}})(val);
+        return val instanceof PS['Data.Either'].Left ? 
+            {left: val.value0} : {right: val.value0};
     };
     var Program = function() {
         this.state = ps.newProgramState;
@@ -23,8 +22,13 @@ exports.make = function(ps) {
         parse: function(str) {
             return e(this.run(ps.parse(str)));
         },
-        compile: function(code) {
-            return e(this.run(ps.compile(code)));
+        compile: function(caret, code) {
+            var r = this.run(ps.compile(caret)(code));
+            if (r instanceof PS['Verne.Program.Compiler.Coroutine'].Run) {
+                return {run: r.value0};
+            } else {
+                return { cont: r.value0 , yield: e(r.value1) };
+            };
         },
         addComponent: function(component) {
             return ps.addComponent(component);
@@ -34,5 +38,4 @@ exports.make = function(ps) {
         }
     };
     return Program;
-
 };

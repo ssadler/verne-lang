@@ -28,25 +28,20 @@ type Compile = CoT (Either Error Component) Program
 compile :: Int -> Code -> Program (Coroutine (Either Error Component) Program Component)
 compile caret = runCoT <<< go caret
 
-go :: Int -> Code -> Compile Component
-
-go caret (Atom {pos,component=cl}) = do
-  c <- lift $ resolve cl
+go :: Int -> Type -> Code -> Compile Component
+go caret typ (Atom {pos,component}) = do
+  c <- lift $ resolve component
   when (caret >= pos.a && caret <= pos.b)
-       (provideCompletion c)
+       (provideCompletion typ c)
   pure c
-
-go caret (List {head,args}) = do
-  ch <- go caret head
-  ct <- traverse (go caret) args
+go caret typ (List {head,args}) = do
+  ch <- go caret typ head
+  let argtypes = case ch of Component {signature} -> signature
+  ct <- traverse (go caret typ) args
   com <- foldM curry ch ct
   case getPos <$> last args of
     Just {b} | caret > b + 1 -> provideCompletion com
   pure com
-
-getPos :: Code -> Pos
-getPos (Atom {pos}) = pos
-getPos (List {pos}) = pos
 
 curry :: Component -> Component -> Compile Component
 curry (Component c1) (Component c2) = Component <$> do
@@ -59,10 +54,8 @@ curry (Component c1) (Component c2) = Component <$> do
        , autocomplete: autoCurry c2.exec <$> c1.autocomplete 
        }
 
-
 provideCompletion :: Component -> Compile Unit
-provideCompletion c@(Component {autocomplete=Just _}) =
-  yield $ Right c
+provideCompletion c@(Component {autocomplete=Just _}) = yield $ Right c
 provideCompletion c = pure unit
 
 -- | Related to component resolution
@@ -81,6 +74,4 @@ cantResolve name =
             , exec: toForeign (\a -> a)
             , autocomplete: Just (toForeign nameCompletion)
             }
-
-
 
