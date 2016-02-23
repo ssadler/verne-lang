@@ -25,7 +25,7 @@ type Error = String
 --
 type Program = State ProgramState
 
-newtype ProgramState = PS { parsers :: List (Parser Code)
+newtype ProgramState = Ps { parsers :: List (Parser Code)
                           , globals :: Namespace
                           , modules :: Namespace
                           }

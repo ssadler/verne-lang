@@ -23,22 +23,24 @@ import Verne.Types.Program
 import Verne.Utils
 
 
-type Compile = CoT (Either Error Component) Program
+type Completion = {component::Component,pos::Pos}
+type Compile = CoT (Either Error Completion) Program
 
-compile :: Int -> Code -> Program (Coroutine (Either Error Component) Program Component)
+compile :: Int -> Code -> Program (Coroutine (Either Error Completion) Program Component)
 compile caret = runCoT <<< go caret ["IO ()"]
 
 go :: Int -> Array Type -> Code -> Compile Component
 go caret typ (Atom {pos,component}) = do
   c <- lift $ resolve typ component
   when (caret >= pos.a && caret <= pos.b)
-       (provideCompletion c)
+       (completeWith pos c)
   pure c
 go caret typ (List {head,args}) = do
   ch <- go caret typ head
   com <- curry caret typ ch (uncons args)
   case getPos <$> last args of
-    Just {b} | caret > b + 1 -> provideCompletion com
+    Just {b} | caret > b + 1 -> completeWith {a:caret,b:caret} com
+    _ -> pure unit
   pure com
 
 
@@ -60,15 +62,16 @@ curry caret typ (Component c1) (Just {head,tail}) = do
   curry caret typ (Component c3) $ uncons tail
 
 
-provideCompletion :: Component -> Compile Unit
-provideCompletion c@(Component {autocomplete=Just _}) = yield $ Right c
-provideCompletion c = pure unit
+completeWith :: Pos -> Component -> Compile Unit
+completeWith p c@(Component {autocomplete=Just _}) =
+  yield $ Right {pos:p,component:c}
+completeWith _ c = pure unit
 
 -- | Related to component resolution
 --
 resolve :: Array Type -> Component -> Program Component
 resolve typ (Component {name,signature=["_lookup"]}) = do
-  globals <- get <#> (\(PS {globals}) -> globals)
+  globals <- get <#> (\(Ps {globals}) -> globals)
   let getOptions = toForeign (\_ -> getNameCompletions typ name globals)
   pure $ maybe (cantResolve name getOptions) id $ lookup name globals
 resolve _ c = pure c

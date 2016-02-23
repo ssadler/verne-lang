@@ -61,7 +61,7 @@ parseCode parsers =
 
 parse :: String -> Program (Either ParseFail Code)
 parse input = do
-  st <- (\(PS s) -> s) <$> get
+  st <- (\(Ps s) -> s) <$> get
   let parsers = Cons parseName (Cons parseString st.parsers)
   pure $ unParser (parseCode parsers) {str: input, pos: 0} onErr onSuccess
   where

@@ -20,14 +20,15 @@ import Verne.Program.Parser
 import Verne.Types.Program
 
 newProgramState :: ProgramState
-newProgramState = PS { parsers: mempty
+newProgramState = Ps { parsers: mempty
                      , globals: empty
                      , modules: empty
                      }
 
-addComponent :: Component -> ProgramState -> ProgramState
-addComponent c@(Component {name}) (PS (s@{globals})) =
-  PS (s { globals = insert name c globals })
+addComponent :: Component -> Program Unit
+addComponent c@(Component {name}) = do
+  modify $ \(Ps s@{globals}) ->
+    Ps $ s { globals = insert name c globals }
 
 program :: Foreign
 program = make { newProgramState

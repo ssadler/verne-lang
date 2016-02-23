@@ -31,7 +31,7 @@ exports.make = function(ps) {
             };
         },
         addComponent: function(component) {
-            return ps.addComponent(component);
+            return this.run(ps.addComponent(component));
         },
         getCompletion: function(caret, code) {
             return m(this.run(ps.getCompletion(caret)(code)));
