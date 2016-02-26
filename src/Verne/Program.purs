@@ -6,6 +6,7 @@ import Control.Monad.State
 
 import Data.Either
 import Data.Foreign
+import Data.Foreign.Class
 import Data.Maybe
 import Data.Monoid
 import Data.Tuple
@@ -25,17 +26,21 @@ newProgramState = Ps { parsers: mempty
                      , modules: empty
                      }
 
-addComponent :: Component -> Program Unit
-addComponent c@(Component {name}) = do
-  modify $ \(Ps s@{globals}) ->
-    Ps $ s { globals = insert name c globals }
+addComponent :: Foreign -> Program (Either ForeignError Unit)
+addComponent fo =
+  case read fo of
+       Right com -> Right <$> mod com
+       Left fe   -> pure (Left fe)
+  where
+  mod c@(Component {name}) = modify (\(Ps s@{globals}) ->
+    Ps $ s { globals = insert name c globals })
 
 program :: Foreign
 program = make { newProgramState
                , runState
-               , parse 
-               , compile 
-               , addComponent 
+               , parse
+               , compile
+               , addComponent
                }
 
 foreign import make :: forall a. {| a} -> Foreign

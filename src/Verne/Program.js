@@ -4,11 +4,17 @@
 // module Verne.Program
 
 exports.make = function(ps) {
-
     var m = function(val) { return val.value0; }
     var e = function(val) {
         return val instanceof PS['Data.Either'].Left ? 
             {left: val.value0} : {right: val.value0};
+    };
+    var ex = function(val) {
+        if (val instanceof PS['Data.Either'].Left) {
+            throw val;
+        } else {
+            return val;
+        }
     };
     var Program = function() {
         this.state = ps.newProgramState;
@@ -31,7 +37,7 @@ exports.make = function(ps) {
             };
         },
         addComponent: function(component) {
-            return this.run(ps.addComponent(component));
+            return ex(this.run(ps.addComponent(component)));
         },
         getCompletion: function(caret, code) {
             return m(this.run(ps.getCompletion(caret)(code)));
