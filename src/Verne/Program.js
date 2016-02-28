@@ -26,9 +26,10 @@ exports.make = function(ps) {
             return tup.value0;
         },
         parse: function(str) {
-            return e(this.run(ps.parse(str)));
+            return ex(this.run(ps.parse(str)));
         },
-        compile: function(caret, code) {
+        compileString: function(caret, str) {
+            var code = this.parse(str);
             var r = this.run(ps.compile(caret)(code));
             if (r instanceof PS['Verne.Program.Compiler.Coroutine'].Run) {
                 return {run: r.value0};
@@ -36,8 +37,8 @@ exports.make = function(ps) {
                 return { cont: r.value0 , yield: e(r.value1) };
             };
         },
-        addObject: function(object) {
-            return ex(this.run(ps.addObject(object)));
+        addPart: function(object) {
+            return ex(this.run(ps.addPart(object)));
         },
         getCompletion: function(caret, code) {
             return m(this.run(ps.getCompletion(caret)(code)));

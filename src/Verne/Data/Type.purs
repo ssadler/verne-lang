@@ -1,6 +1,10 @@
 module Verne.Data.Type where
 
 import Data.Array
+import Data.Generic
+import Data.Maybe
+
+import Prelude
 
 -- http://dev.stephendiehl.com/fun/006_hindley_milner.html
 
@@ -9,7 +13,7 @@ data Type = Type Type Type
           | TNil
 
 lastType :: Type -> Type
-lastType (Type _ b) = last b
+lastType (Type _ b) = lastType b
 lastType t = t
 
 typeLength :: Type -> Int
@@ -25,3 +29,9 @@ typeFromArr arr = case uncons arr of
                        Just {head:a1,tail:[a2]} -> Type a1 a2
                        Just {head:a1,tail:a2} -> Type a1 (typeFromArr a2)
                        Nothing -> TNil
+
+
+derive instance genericType :: Generic Type
+instance showType :: Show Type where show = gShow
+instance eqType :: Eq Type where eq = gEq
+

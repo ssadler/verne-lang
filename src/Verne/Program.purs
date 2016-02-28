@@ -14,7 +14,7 @@ import Data.Tuple
 import Prelude
 
 import Verne.Data.Code
-import Verne.Data.Object
+import Verne.Data.Part
 import Verne.Data.Namespace
 import Verne.Program.Compiler
 import Verne.Program.Parser
@@ -26,13 +26,13 @@ newProgramState = Ps { parsers: mempty
                      , modules: empty
                      }
 
-addObject :: Foreign -> Program (Either ForeignError Unit)
-addObject fo =
+addPart :: Foreign -> Program (Either ForeignError Part)
+addPart fo =
   case read fo of
        Right com -> Right <$> mod com
        Left fe   -> pure (Left fe)
   where
-  mod c@(Object {name}) = modify (\(Ps s@{globals}) ->
+  mod c@(Part {name}) = modify (\(Ps s@{globals}) ->
     Ps $ s { globals = insert name c globals })
 
 program :: Foreign
@@ -40,7 +40,7 @@ program = make { newProgramState
                , runState
                , parse
                , compile
-               , addObject
+               , addPart
                }
 
 foreign import make :: forall a. {| a} -> Foreign

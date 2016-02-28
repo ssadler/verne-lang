@@ -2,7 +2,7 @@ module Verne.Data.Namespace
   ( module SM
   , Namespace(..)
   , lookupName
-  , nameObject
+  , namePart
   , getNameCompletions
   ) where
 
@@ -16,16 +16,16 @@ import Data.StrMap (empty, insert, lookup) as SM
 import Data.Tuple (Tuple(..))
 
 import Verne.Data.Code
-import Verne.Data.Object
+import Verne.Data.Part
 import Verne.Types.Hashable
 
 import Prelude
-type Namespace = StrMap Object
+type Namespace = StrMap Part
 
 getNameCompletions :: Array String -> String -> Namespace
-                   -> Array (Tuple String Object)
+                   -> Array (Tuple String Part)
 getNameCompletions typ pref ns = fromList $ filter go $ toList ns
   where
-  go (Tuple name (Object com)) =
+  go (Tuple name (Part com)) =
     (pref == S.take (S.length pref) name) &&
     typ == lastType com."type"
