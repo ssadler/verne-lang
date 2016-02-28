@@ -9,6 +9,7 @@ import Data.Foreign.Class
 import Data.Foreign.NullOrUndefined
 import Data.Maybe
 
+import Verne.Data.Type
 import Verne.Types.Hashable
 import Verne.Utils
 
@@ -18,9 +19,10 @@ import Prelude
 newtype Component = Component
     { id :: String
     , name :: String
+    , "type" :: Type
     , exec :: Foreign
-    , signature :: Array String
     , autocomplete :: Maybe Foreign
+    , args :: Array Component
     }
 
 instance componentIsForeign :: IsForeign Component where
@@ -48,17 +50,28 @@ valueComponent :: forall a. (Hashable a) => String -> a -> Component
 valueComponent typ value =
   Component { id: hash value
             , name: dump value
-            , signature: [typ]
+            , "type": TCon typ
             , exec: toForeign (\_ -> value)
             , autocomplete: Nothing
+            , args: []
             }
 
 nullComponent :: Component
 nullComponent =
   Component { id: ""
             , name: "null"
-            , signature: ["Null"]
+            , "type": TCon "Null"
             , exec: toForeign nullValue
             , autocomplete: Nothing
+            , args: []
             }
 
+curry :: Component -> Component -> Component
+curry (Component c1@{"type":Type _ t) arg =
+  Component { id: hash [c1,c2]
+            , name: ""
+            , "type": t
+            , exec: c1.exec
+            , autocomplete: c1.autocomplete
+            , args: snoc c1.args arg
+            }

@@ -19,47 +19,12 @@ import Text.Parsing.StringParser.Combinators
 import Text.Parsing.StringParser.String
 
 import Verne.Data.Code hiding (getPos)
-import Verne.Data.Component
 import Verne.Data.Namespace
 import Verne.Types.Program
 
 type ParseFail = {pos::Int, error::ParseError}
 
-
--- | Maxpos is a number that's always bigger than another number.
--- In this case the length of a code expression. Used to mean "infinity".
-maxpos :: Int
-maxpos = 1000000
-
-getPos :: Parser Int
-getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
-
-parseCode :: List (Parser Code) -> Parser Code
-parseCode parsers =
-  List <$> ({pos:_,head:_,args:_}
-         <$> thePos <*> parseArg <*> parseArgs)
-  where
-  thePos = (\a b -> {a,b}) <$> getPos <*> pure maxpos
-
-  parseParens :: Parser Code
-  parseParens = fix $ \_ -> do
-    a <- getPos <* char '(' <* skipSpaces
-    head <- parseArg <* skipSpaces
-    args <- parseArgs <* skipSpaces
-    b <- (eof *> pure maxpos) <|> (char ')' *> getPos)
-    pure $ List {pos:{a,b},head,args}
-
-  parseArgs :: Parser (Array Code)
-  parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
-
-  parseArg :: Parser Code
-  parseArg = fix $ \_ -> parseParens <|> eachParser parsers
-
-  eachParser :: List (Parser Code) -> Parser Code
-  eachParser (Cons x xs) = x <|> eachParser xs
-  eachParser Nil = fail "none shall parse"
-
-parse :: String -> Program (Either ParseFail Code)
+parse :: String -> Program (Either ParseFail Syntax)
 parse input = do
   st <- (\(Ps s) -> s) <$> get
   let parsers = Cons parseName (Cons parseString st.parsers)
@@ -68,24 +33,40 @@ parse input = do
   onSuccess ast _ = Right ast
   onErr pos error = Left {pos,error}
 
-parseName :: Parser Code
+parseCode :: Parser Syntax
+parseCode = 
+  let thePos = Posi <$> getPos <*> pure 1000000
+   in thePos <$> (Syntax <$> parseArg <*> parseArgs)
+
+parseParens :: Parser Syntax
+parseParens = fix $ \_ -> do
+  a <- getPos <* char '(' <* skipSpaces
+  head <- parseArg <* skipSpaces
+  args <- parseArgs <* skipSpaces
+  b <- (eof *> pure 1000000) <|> (char ')' *> getPos)
+  pure $ Posi a b $ Syntax head args
+
+parseArgs :: Parser (Array Syntax)
+parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
+
+parseArg :: Parser Syntax
+parseArg = fix $ \_ -> parseParens <|> parseName <|> parseString
+
+parseName :: Parser Syntax
 parseName = do
   a <- getPos
   chars <- Cons <$> lowerCaseChar <*> many myAlphaNum
   b <- getPos
-  let name = fromCharArray $ fromList chars
-  pure $ Atom {pos:{a,b},component:nameComponent name}
+  pure $ Posi a b $ Name fromCharArray $ fromList chars
   where
   myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
                             || c >= 'A' && c <= 'Z'
                             || c >= '0' && c <= '9'
 
-parseString :: Parser Code
+parseString :: Parser Syntax
 parseString = do
   a <- getPos
   char '"'
   str <- many $ satisfy $ (not <<< (=='"'))
   b <- (eof *> pure maxpos) <|> (char '"' *> getPos)
-  let pos = {a,b}
-      component = valueComponent "String" (fromCharArray $ fromList str)
-  pure $ Atom {pos, component}
+  pure $ Posi a b $ Str str

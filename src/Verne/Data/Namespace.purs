@@ -12,7 +12,7 @@ import Data.Foreign
 import Data.Maybe
 import qualified Data.String (length, take, fromCharArray) as S
 import Data.StrMap (StrMap(..), lookup, toList)
-import Data.StrMap (empty, insert) as SM
+import Data.StrMap (empty, insert, lookup) as SM
 import Data.Tuple (Tuple(..))
 
 import Verne.Data.Code
@@ -21,9 +21,6 @@ import Verne.Types.Hashable
 
 import Prelude
 type Namespace = StrMap Component
-
-lookupName :: String -> Namespace -> Maybe Component
-lookupName = lookup
 
 nameComponent :: String -> Component
 nameComponent name =
