@@ -2,7 +2,7 @@ module Verne.Data.Namespace
   ( module SM
   , Namespace(..)
   , lookupName
-  , nameComponent
+  , nameObject
   , getNameCompletions
   ) where
 
@@ -16,25 +16,16 @@ import Data.StrMap (empty, insert, lookup) as SM
 import Data.Tuple (Tuple(..))
 
 import Verne.Data.Code
-import Verne.Data.Component
+import Verne.Data.Object
 import Verne.Types.Hashable
 
 import Prelude
-type Namespace = StrMap Component
-
-nameComponent :: String -> Component
-nameComponent name =
-  Component { id: hash ["Name Component", name]
-            , name: name
-            , signature: ["_lookup"]
-            , exec: toForeign "none"
-            , autocomplete: Nothing
-            }
+type Namespace = StrMap Object
 
 getNameCompletions :: Array String -> String -> Namespace
-                   -> Array (Tuple String Component)
+                   -> Array (Tuple String Object)
 getNameCompletions typ pref ns = fromList $ filter go $ toList ns
   where
-  go (Tuple name (Component com)) =
+  go (Tuple name (Object com)) =
     (pref == S.take (S.length pref) name) &&
-    typ == (take 1 $ reverse com.signature)
+    typ == lastType com."type"

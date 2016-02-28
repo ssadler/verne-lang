@@ -1,7 +1,7 @@
-module Verne.Data.Component
-  ( Component(..)
-  , nullComponent
-  , valueComponent
+module Verne.Data.Object
+  ( Object(..)
+  , nullObject
+  , valueObject
   ) where
 
 import Data.Foreign
@@ -16,39 +16,39 @@ import Verne.Utils
 import Prelude
 
 
-newtype Component = Component
+newtype Object = Object
     { id :: String
     , name :: String
     , "type" :: Type
     , exec :: Foreign
     , autocomplete :: Maybe Foreign
-    , args :: Array Component
+    , args :: Array Object
     }
 
-instance componentIsForeign :: IsForeign Component where
-    read fo = Component <$> ({id:"", name:_, signature:_, exec:_, autocomplete:_}
+instance objectIsForeign :: IsForeign Object where
+    read fo = Object <$> ({id:"", name:_, "type":_, exec:_, autocomplete:_}
                         <$> readProp "name" fo
-                        <*> readProp "signature" fo
+                        <*> readProp "type" fo
                         <*> readProp "exec" fo
                         <*> (runNullOrUndefined <$> readProp "autocomplete" fo)
                             )
 
-instance showComponent :: Show Component where
-    show (Component {id,name,signature,autocomplete,exec}) =
+instance showObject :: Show Object where
+    show (Object {id,name,"type"=t,autocomplete,exec}) =
         let f = dump <$> autocomplete
             e = dump exec
-         in "Component {" <> id <> ","
+         in "Object {" <> id <> ","
                           <> name <> ","
-                          <> show signature <> ","
+                          <> show t <> ","
                           <> show f <> ","
                           <> dump exec <> "}"
 
-instance eqComponent :: Eq Component where
-    eq (Component c1) (Component c2) = c1.id == c2.id
+instance eqObject :: Eq Object where
+    eq (Object c1) (Object c2) = c1.id == c2.id
 
-valueComponent :: forall a. (Hashable a) => String -> a -> Component
-valueComponent typ value =
-  Component { id: hash value
+valueObject :: forall a. (Hashable a) => String -> a -> Object
+valueObject typ value =
+  Object { id: hash value
             , name: dump value
             , "type": TCon typ
             , exec: toForeign (\_ -> value)
@@ -56,9 +56,9 @@ valueComponent typ value =
             , args: []
             }
 
-nullComponent :: Component
-nullComponent =
-  Component { id: ""
+nullObject :: Object
+nullObject =
+  Object { id: ""
             , name: "null"
             , "type": TCon "Null"
             , exec: toForeign nullValue
@@ -66,9 +66,9 @@ nullComponent =
             , args: []
             }
 
-curry :: Component -> Component -> Component
-curry (Component c1@{"type":Type _ t) arg =
-  Component { id: hash [c1,c2]
+curry :: Object -> Object -> Object
+curry (Object c1@{"type":Type _ t) arg =
+  Object { id: hash [c1,c2]
             , name: ""
             , "type": t
             , exec: c1.exec

@@ -36,8 +36,8 @@ exports.make = function(ps) {
                 return { cont: r.value0 , yield: e(r.value1) };
             };
         },
-        addComponent: function(component) {
-            return ex(this.run(ps.addComponent(component)));
+        addObject: function(object) {
+            return ex(this.run(ps.addObject(object)));
         },
         getCompletion: function(caret, code) {
             return m(this.run(ps.getCompletion(caret)(code)));

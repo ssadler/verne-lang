@@ -5,11 +5,11 @@ module Verne.Data.Code
 
 import Data.Array
 
-import Verne.Data.Component
+import Verne.Data.Object
 
 -- | Code Tree
 data Code = Code Code (Array Code)
-          | Atom Component
+          | Obj Object
           | Posc Int Int Code
 
 -- | Syntax Tree
