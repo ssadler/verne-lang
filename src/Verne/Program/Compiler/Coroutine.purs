@@ -15,7 +15,7 @@ data Coroutine r m a = Yield (CoT r m a) r | Run a
 runCoT :: forall r m a. CoT r m a -> m (Coroutine r m a)
 runCoT (CoT a) = a
 
-yield :: forall r m. (Monad m) => r -> CoT r m Part
+yield :: forall r m. (Monad m) => r -> CoT r m Unit
 yield = CoT <<< pure <<< Yield (pure unit)
 
 instance fA :: (Functor m) => Functor (Coroutine r m) where

@@ -1,12 +1,14 @@
 module Verne.Program.Compiler
-  ( compile
+  ( CompileError(..)
+  , compile
   ) where
 
+import Control.Alt
+import Control.Apply
 import Control.Monad (when)
 import Control.Monad.Except.Trans
 
-import Data.Alt
-import Data.Array (foldM, drop, length, last, take, uncons)
+import Data.Array (foldM, drop, length, last, take, uncons, zipWith)
 import Data.Either
 import Data.Foreign
 import Data.Maybe
@@ -19,40 +21,42 @@ import Verne.Data.Code
 import Verne.Data.Part
 import Verne.Data.Namespace
 import Verne.Data.Type
-import Verne.Program.Compiler.Coroutine
 import Verne.Types.Hashable
 import Verne.Types.Program
 import Verne.Utils
 
 import Debug.Trace
 
-type Compile = CoT (Either Error Completion) Program
+type Compile = ExceptT CompileError Program
 
-compile :: Syntax -> Program (Coroutine (Either Error Completion) Program Code)
-compile = runCoT <<< go (TCon "IO ()")
+data CompileError = CompileError String
+                  | NeedArg Code (Array Code)
+
+compile :: Syntax -> Program (Either CompileError Code)
+compile = runExceptT <<< go (TCon "IO ()")
 
 -- String
 go :: Type -> Syntax -> Compile Code
 go t@(TCon "String") (Posi a b (Str str)) =
-  pure $ Posc a b $ Obj $ valuePart t str
+  pure $ Posc a b $ Atom $ valuePart t str
 
 -- Overloaded String
 go (TCon t1) syn@(Posi a b (Str str)) = do
-  mobj <- lookupName t1
-  let te = checkType (TCon t1) a b (TCon "String")
-  func <- case mobj of
-    Just obj@(Part {"type"=Type (TCon "String") (TCon t2)}) ->
-      if t1 == t2 then pure obj else te
+  let te = typeError (TCon t1) a b (TCon "String")
+  part <- lookupName t1
+  case part of
+    Part {"type"=Type (TCon "String") (TCon t2)} ->
+      if t1 /= t2 then te else do
+        let strPart = valuePart (TCon "String") str
+        pure $ Posc a b $ Atom $ unsafeCurryPart part strPart
     _ -> te
-  r <- go (TCon "String") syn
-  pure $ Posc a b $ Obj $ curryPart construct r
 
 -- Name lookup
 go typ (Posi a b (Name name)) = do
   obj <- lookupName name
   let objType = case obj of Part {"type"=t} -> t
-  checkType typ a b objType
-  pure $ Posc a b (Obj obj)
+  when (typ /= objType) (typeError typ a b objType)
+  pure $ Posc a b (Atom obj)
 
 -- Function call
 go typ (Posi a b (Syntax (Posi a' b' (Name name)) args)) = do
@@ -65,33 +69,28 @@ go typ (Posi a b (Syntax (Posi a' b' (Name name)) args)) = do
   when (nArgs > length funcSig - 1) do
      fail ("Too many arguments for function " ++ name)
   codeArgs <- sequence $ zipWith go funcSig args
-  completeWith func args $ 
-    checkType typ a b (typeFromArr (drop nArgs funcSig))
-  pure $ Posc a b (Code (Posc a' b' (Obj func)) codeArgs)
+  --completeWith (Posc a b func) args $ 
+  --  checkType typ a b (typeFromArr (drop nArgs funcSig))
+  let actualType = typeFromArr (drop nArgs funcSig)
+  when (typ /= actualType) (typeError typ a b actualType)
+  pure $ Posc a b (Code (Posc a' b' (Atom func)) codeArgs)
 
 
-checkType :: Type -> Int -> Int -> Type -> Compile Part
-checkType t1 a b t2 =
+typeError :: forall a. Type -> Int -> Int -> Type -> Compile a
+typeError t1 a b t2 =
   let msg = "Could not match expect type " ++ show t1 ++
             " with actual type " ++ show t2
-  in when (t1 != t2) $ fail msg
+  in fail msg
 
-
+completeWith :: Code -> Array Code -> Compile Unit
+completeWith a b = pure unit
 
 lookupName :: String -> Compile Part
 lookupName name = do
-  name <- lift get <#> (\(Ps {globals}) -> lookup name globals)
-  case name of
+  mpart <- lift get <#> (\(Ps {globals}) -> lookup name globals)
+  case mpart of
        Nothing -> fail (name ++ " is not defined")
-       Just n -> return n
+       Just part -> pure part
 
-
-
--- type Completion = {"object"::Part,pos::Pos}
--- -- | Provide a completion helper
--- completeWith :: Pos -> Part -> Compile Part
--- -- | If the component has a completion helper specified for this position
--- completeWith p c@(Part {autocomplete=Just _}) =
---   yield $ Right {pos:p,component:c}
--- -- | Check for a completion helper for the next position
--- completeWith _ c = pure unit
+fail :: forall a. Error -> Compile a
+fail = ExceptT <<< return <<< Left <<< CompileError

@@ -21,12 +21,11 @@ import Verne.Program.Parser
 import Verne.Types.Program
 
 newProgramState :: ProgramState
-newProgramState = Ps { parsers: mempty
-                     , globals: empty
+newProgramState = Ps { globals: empty
                      , modules: empty
                      }
 
-addPart :: Foreign -> Program (Either ForeignError Part)
+addPart :: Foreign -> Program (Either ForeignError Unit)
 addPart fo =
   case read fo of
        Right com -> Right <$> mod com

@@ -1,8 +1,6 @@
 module Verne.Data.Namespace 
   ( module SM
   , Namespace(..)
-  , lookupName
-  , namePart
   , getNameCompletions
   ) where
 
@@ -17,12 +15,13 @@ import Data.Tuple (Tuple(..))
 
 import Verne.Data.Code
 import Verne.Data.Part
+import Verne.Data.Type
 import Verne.Types.Hashable
 
 import Prelude
 type Namespace = StrMap Part
 
-getNameCompletions :: Array String -> String -> Namespace
+getNameCompletions :: Type -> String -> Namespace
                    -> Array (Tuple String Part)
 getNameCompletions typ pref ns = fromList $ filter go $ toList ns
   where

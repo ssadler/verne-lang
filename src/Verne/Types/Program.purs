@@ -3,7 +3,6 @@ module Verne.Types.Program
   , Error(..)
   , Program(..)
   , ProgramState(..)
-  , Type(..)
   ) where
 
 import Control.Monad.State
@@ -17,16 +16,13 @@ import Verne.Data.Namespace
 
 -- | Core language types
 --
-type Type = String
-
 type Error = String
 
 -- | Program monad
 --
 type Program = State ProgramState
 
-newtype ProgramState = Ps { parsers :: List (Parser Code)
-                          , globals :: Namespace
+newtype ProgramState = Ps { globals :: Namespace
                           , modules :: Namespace
                           }
 

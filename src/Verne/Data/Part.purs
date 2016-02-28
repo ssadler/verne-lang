@@ -1,6 +1,6 @@
 module Verne.Data.Part
   ( Part(..)
-  , curryPart
+  , unsafeCurryPart
   , nullPart
   , valuePart
   ) where
@@ -27,10 +27,10 @@ newtype Part = Part
     , args :: Array Part
     }
 
-instance objectIsForeign :: IsForeign Part where
+instance partIsForeign :: IsForeign Part where
     read fo = do
       n <- readProp "name" fo
-      t <- parseType <$> readProp "type" fo
+      t <- readProp "type" fo
       e <- readProp "exec" fo
       auto <- runNullOrUndefined <$> readProp "autocomplete" fo
       pure $ Part {id:"", name:n, "type":t, exec:e, autocomplete:auto, args:[]}
@@ -48,11 +48,15 @@ instance objectIsForeign :: IsForeign Part where
 instance eqPart :: Eq Part where
     eq (Part c1) (Part c2) = c1.id == c2.id
 
-valuePart :: forall a. (Hashable a) => String -> a -> Part
+instance hashPart :: Hashable Part where
+  hash (Part {id}) = id
+
+
+valuePart :: forall a. (Hashable a) => Type -> a -> Part
 valuePart typ value =
   Part { id: hash value
        , name: dump value
-       , "type": TCon typ
+       , "type": typ
        , exec: toForeign (\_ -> value)
        , autocomplete: Nothing
        , args: []
@@ -68,9 +72,9 @@ nullPart =
        , args: []
        }
 
-curryPart :: Part -> Part -> Part
-curryPart (Part c1@{"type":Type _ t}) arg =
-  Part { id: hash [c1,arg]
+unsafeCurryPart :: Part -> Part -> Part
+unsafeCurryPart (Part c1@{"type":Type _ t}) arg =
+  Part { id: hash [Part c1,arg]
        , name: ""
        , "type": t
        , exec: c1.exec

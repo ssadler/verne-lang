@@ -9,7 +9,7 @@ import Verne.Data.Part
 
 -- | Code Tree
 data Code = Code Code (Array Code)
-          | Obj Part
+          | Atom Part
           | Posc Int Int Code
 
 -- | Syntax Tree
