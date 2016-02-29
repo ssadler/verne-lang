@@ -9,8 +9,6 @@ import Control.Monad.State
 import Control.Monad.State.Class (get, modify) as SC
 import Data.List (List(..))
 
-import Text.Parsing.StringParser (Parser(..))
-
 import Verne.Data.Code
 import Verne.Data.Namespace
 

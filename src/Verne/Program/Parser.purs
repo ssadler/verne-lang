@@ -14,12 +14,9 @@ import Data.String (fromCharArray)
 
 import Prelude
 
-import Text.Parsing.StringParser hiding (Pos(..))
-import Text.Parsing.StringParser.Combinators
-import Text.Parsing.StringParser.String
-
 import Verne.Data.Code (Syntax(..))
 import Verne.Data.Namespace
+import Verne.Parsing
 import Verne.Types.Program
 
 type ParseFail = {pos::Int, error::ParseError}

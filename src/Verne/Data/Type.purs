@@ -14,9 +14,7 @@ import Data.List (List(..), fromList)
 
 import Prelude
 
-import Text.Parsing.StringParser hiding (Pos(..))
-import Text.Parsing.StringParser.Combinators
-import Text.Parsing.StringParser.String
+import Verne.Parsing
 
 -- http://dev.stephendiehl.com/fun/006_hindley_milner.html
 
@@ -60,7 +58,7 @@ parseType = do
   skipSpaces
   (Type con <$> rec) <|> (eof *> pure con)
   where
-  rec = fix $ \_ -> try (string "->") *> parseType
+  rec = fix $ \_ -> try (char '-' *> char '>') *> parseType
   parseCon = toStr <$> (Cons <$> upperCaseChar <*> many alphaNum)
   toStr = fromCharArray <<< fromList
 
