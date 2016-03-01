@@ -27,6 +27,14 @@ newtype Part = Part
     , args :: Array Part
     }
 
+-- | How to execute
+--
+-- In order that part execution is easy and unambiguous,
+-- exec functions should be wrapped in closures that expect
+-- the part as the `this` variable.
+-- They are then able to recursively execute themselves.
+-- The `this` variable refers to the execution API,
+-- which itself is typed.
 instance partIsForeign :: IsForeign Part where
     read fo = do
       n <- readProp "name" fo

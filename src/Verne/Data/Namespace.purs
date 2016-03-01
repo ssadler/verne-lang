@@ -21,6 +21,7 @@ import Verne.Types.Hashable
 import Prelude
 type Namespace = StrMap Part
 
+
 getNameCompletions :: Type -> String -> Namespace
                    -> Array (Tuple String Part)
 getNameCompletions typ pref ns = fromList $ filter go $ toList ns

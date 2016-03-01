@@ -11,9 +11,9 @@ exports.make = function(ps) {
     };
     var ex = function(val) {
         if (val instanceof PS['Data.Either'].Left) {
-            throw val;
+            throw val.value0;
         } else {
-            return val;
+            return val.value0;
         }
     };
     var Program = function() {
@@ -21,21 +21,19 @@ exports.make = function(ps) {
     };
     Program.prototype = {
         run: function(act) {
-            var tup = ps.runState(act)(this.state);
+            var tup = PS['Control.Monad.State'].runState(act)(this.state);
             this.state = tup.value1;
             return tup.value0;
         },
         parse: function(str) {
-            return ex(this.run(ps.parse(str)));
+            return e(this.run(ps.parse(str)));
         },
-        compileString: function(caret, str) {
-            var code = this.parse(str);
-            var r = this.run(ps.compile(caret)(code));
-            if (r instanceof PS['Verne.Program.Compiler.Coroutine'].Run) {
-                return {run: r.value0};
-            } else {
-                return { cont: r.value0 , yield: e(r.value1) };
-            };
+        compileString: function(str) {
+            var syntax = e(this.run(ps.parse(str)));
+            if (syntax.right) {
+                return e(this.run(ps.compile(syntax.right)));
+            }
+            return syntax;
         },
         addPart: function(object) {
             return ex(this.run(ps.addPart(object)));
