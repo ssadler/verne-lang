@@ -1,4 +1,4 @@
-module Verne.Types.Program
+module Verne.Types
   ( module SC
   , Error(..)
   , Program(..)

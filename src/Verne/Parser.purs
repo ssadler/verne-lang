@@ -1,4 +1,4 @@
-module Verne.Program.Parser
+module Verne.Parser
   ( ParseFail(..)
   , parse
   ) where
@@ -17,7 +17,7 @@ import Prelude
 import Verne.Data.Code (Syntax(..))
 import Verne.Data.Namespace
 import Verne.Parsing
-import Verne.Types.Program
+import Verne.Types
 
 type ParseFail = {pos::Int, error::ParseError}
 

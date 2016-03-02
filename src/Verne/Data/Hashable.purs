@@ -1,4 +1,4 @@
-module Verne.Types.Hashable
+module Verne.Data.Hashable
   ( Hash(..)
   , Hashable
   , hash

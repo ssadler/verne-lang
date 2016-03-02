@@ -16,9 +16,11 @@ import Prelude
 import Verne.Data.Code
 import Verne.Data.Part
 import Verne.Data.Namespace
-import Verne.Program.Compiler
-import Verne.Program.Parser
-import Verne.Types.Program
+
+import Verne.Compiler
+import Verne.Exec
+import Verne.Parser
+import Verne.Types
 
 newProgramState :: ProgramState
 newProgramState = Ps { globals: empty
@@ -36,10 +38,14 @@ addPart fo =
 
 program :: Foreign
 program = make { newProgramState
-               , runState
+               , addPart
                , parse
                , compile
-               , addPart
+               , toExecutable
+               , execute
+               , runState
+               , showCodeError
+               , codeErrors
                }
 
 foreign import make :: forall a. {| a} -> Foreign

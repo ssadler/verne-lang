@@ -12,7 +12,7 @@ import Data.Foreign.NullOrUndefined
 import Data.Maybe
 
 import Verne.Data.Type
-import Verne.Types.Hashable
+import Verne.Data.Hashable
 import Verne.Utils
 
 import Prelude
@@ -21,6 +21,7 @@ import Prelude
 newtype Part = Part
     { id :: String
     , name :: String
+    -- TODO: , "module" :: String
     , "type" :: Type
     , exec :: Foreign
     , autocomplete :: Maybe Foreign

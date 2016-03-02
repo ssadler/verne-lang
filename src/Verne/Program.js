@@ -3,6 +3,7 @@
 
 // module Verne.Program
 
+
 exports.make = function(ps) {
     var m = function(val) { return val.value0; }
     var e = function(val) {
@@ -16,31 +17,37 @@ exports.make = function(ps) {
             return val.value0;
         }
     };
+
+    var Code = function(program, str) {
+        this.program = program;
+        this.syntax = ex(program.run(ps.parse(str)));
+        this.code = program.run(ps.compile(this.syntax));
+    }
+    Code.prototype = {
+        execute: function() {
+            var exe = ex(ps.toExecutable(this.code));
+            return ps.execute(exe);
+        },
+        getCompletion: function(caret, code) {
+            return m(this.run(ps.getCompletion(caret)(code)));
+        }
+    }
+    
     var Program = function() {
         this.state = ps.newProgramState;
     };
     Program.prototype = {
         run: function(act) {
-            var tup = PS['Control.Monad.State'].runState(act)(this.state);
+            var tup = ps.runState(act)(this.state);
             this.state = tup.value1;
             return tup.value0;
-        },
-        parse: function(str) {
-            return e(this.run(ps.parse(str)));
-        },
-        compileString: function(str) {
-            var syntax = e(this.run(ps.parse(str)));
-            if (syntax.right) {
-                return e(this.run(ps.compile(syntax.right)));
-            }
-            return syntax;
         },
         addPart: function(object) {
             return ex(this.run(ps.addPart(object)));
         },
-        getCompletion: function(caret, code) {
-            return m(this.run(ps.getCompletion(caret)(code)));
-        }
+        compile: function(str) {
+            return new Code(this, str);
+        },
     };
     return Program;
 };

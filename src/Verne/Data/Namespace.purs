@@ -16,7 +16,7 @@ import Data.Tuple (Tuple(..))
 import Verne.Data.Code
 import Verne.Data.Part
 import Verne.Data.Type
-import Verne.Types.Hashable
+import Verne.Data.Hashable
 
 import Prelude
 type Namespace = StrMap Part

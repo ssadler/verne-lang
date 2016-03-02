@@ -1,4 +1,4 @@
-module Verne.Program.Compiler
+module Verne.Compiler
   ( compile
   ) where
 
@@ -21,8 +21,8 @@ import Verne.Data.Code
 import Verne.Data.Part
 import Verne.Data.Namespace
 import Verne.Data.Type
-import Verne.Types.Hashable
-import Verne.Types.Program
+import Verne.Data.Hashable
+import Verne.Types
 import Verne.Utils
 
 import Debug.Trace
