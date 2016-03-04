@@ -6,10 +6,15 @@
 var Left = PS['Data.Either'].Left;
 var Right = PS['Data.Either'].Right;
 
-exports.runPart = function(f, args) {
+var runPartInner = function(part, moreargs) {
+    var args = part.args.map(runPartInner).concat(moreargs || []);
+    return part.exec.apply(part, args);
+}
+
+exports.runPart = function(part, moreargs) {
     try {
-        return Right(f.execute.apply(f, args));
+        return new Right(runPartInner(part, moreargs));
     } catch (e) {
-        return Left(e);
+        return new Left(e);
     }
 };

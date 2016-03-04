@@ -4,8 +4,6 @@ module Verne.Data.Hashable
   , hash
   ) where
 
-import Data.Array
-
 import Verne.Utils
 
 import Prelude

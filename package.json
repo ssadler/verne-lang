@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bundle": "pulp build --force --modules Verne.Program --to index.js && echo 'module.exports = PS;' >> index.js"
+    "bundle": "pulp build --force --modules Verne.Program --to index.js && echo 'module.exports = PS;' >> index.js",
+    "graphdeps": "scripts/graphdeps.py | dot -Tsvg > output/deps.svg",
+    "warnings": "scripts/warnings.sh"
   },
   "author": "",
   "license": "ISC"

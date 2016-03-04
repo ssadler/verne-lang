@@ -7,20 +7,16 @@ import Control.Monad.State
 import Data.Either
 import Data.Foreign
 import Data.Foreign.Class
-import Data.Maybe
-import Data.Monoid
-import Data.Tuple
 
 import Prelude
 
 import Verne.Data.Code
 import Verne.Data.Part
-import Verne.Data.Namespace
+import Verne.Data.Program
 
 import Verne.Compiler
 import Verne.Exec
 import Verne.Parser
-import Verne.Types
 
 newProgramState :: ProgramState
 newProgramState = Ps { globals: empty
@@ -46,6 +42,8 @@ program = make { newProgramState
                , runState
                , showCodeError
                , codeErrors
+               , getCompletion
+               , getNameCompletions
                }
 
 foreign import make :: forall a. {| a} -> Foreign

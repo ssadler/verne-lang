@@ -5,9 +5,7 @@ module Verne.Parser
 
 import Control.Alt
 import Control.Apply
-import Control.Monad.Except.Trans
 
-import Data.Foreign
 import Data.List (List(..), fromList)
 import Data.Either
 import Data.String (fromCharArray)
@@ -15,26 +13,25 @@ import Data.String (fromCharArray)
 import Prelude
 
 import Verne.Data.Code (Syntax(..))
-import Verne.Data.Namespace
-import Verne.Parsing
-import Verne.Types
+import Verne.Utils
+import Verne.Utils.Parsing
 
 type ParseFail = {pos::Int, error::ParseError}
 
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
 
-parse :: String -> Program (Either ParseFail Syntax)
-parse input = do
-  st <- (\(Ps s) -> s) <$> get
-  pure $ unParser parseSyntax {str: input, pos: 0} onErr onSuccess
+parse :: String -> Either ParseFail Syntax
+parse input =
+  unParser parser {str: input, pos: 0} onErr onSuccess
   where
+  parser = parseSyntax <* eof
   onSuccess ast _ = Right ast
   onErr pos error = Left {pos,error}
 
 parseSyntax :: Parser Syntax
 parseSyntax = 
-  let thePos = Posi <$> getPos <*> pure 1000000
+  let thePos = Posi <$> getPos <*> pure infinity
    in thePos <*> (Syntax <$> parseArg <*> parseArgs)
 
 parseParens :: Parser Syntax
@@ -42,7 +39,7 @@ parseParens = fix $ \_ -> do
   a <- getPos <* char '(' <* skipSpaces
   head <- parseArg <* skipSpaces
   args <- parseArgs <* skipSpaces
-  b <- (eof *> pure 1000000) <|> (char ')' *> getPos)
+  b <- (eof *> pure infinity) <|> (char ')' *> getPos)
   pure $ Posi a b $ Syntax head args
 
 parseArgs :: Parser (Array Syntax)
@@ -55,7 +52,7 @@ parseName :: Parser Syntax
 parseName = do
   a <- getPos
   chars <- Cons <$> lowerCaseChar <*> many myAlphaNum
-  b <- getPos
+  b <- getPos <* skipSpaces
   pure $ Posi a b $ Name $ fromCharArray $ fromList chars
   where
   myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
@@ -67,5 +64,5 @@ parseString = do
   a <- getPos
   char '"'
   str <- many $ satisfy (/='"')
-  b <- (eof *> pure 1000000) <|> (char '"' *> getPos)
+  b <- (eof *> pure infinity) <|> (char '"' *> getPos)
   pure $ Posi a b $ Str $ fromCharArray $ fromList $ str

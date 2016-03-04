@@ -4,6 +4,8 @@ import Data.Foreign
 
 import Prelude
 
+foreign import infinity :: Int
+
 foreign import dump :: forall a. a -> String
 
 foreign import compactShow :: String -> String

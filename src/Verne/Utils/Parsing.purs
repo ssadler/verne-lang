@@ -1,7 +1,6 @@
-module Verne.Parsing where
+module Verne.Utils.Parsing where
 
 import Control.Alt
-import Control.Apply ((*>))
 import Control.Alternative
 import Control.Plus
 

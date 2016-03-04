@@ -2,30 +2,20 @@ module Verne.Compiler
   ( compile
   ) where
 
-import Control.Alt
-import Control.Apply
-import Control.Monad (when)
-import Control.Monad.Except.Trans
 import Control.Monad.State.Class
 
-import Data.Array (foldM, drop, length, last, take, uncons, zipWith)
-import Data.Either
-import Data.Foreign
+import Data.Array ( foldM, drop, head, length, last
+                  , reverse, snoc, take, uncons, zipWith)
 import Data.Maybe
-import Data.StrMap (lookup)
 import Data.Traversable
 
 import Prelude
 
 import Verne.Data.Code
 import Verne.Data.Part
-import Verne.Data.Namespace
+import Verne.Data.Program
 import Verne.Data.Type
-import Verne.Data.Hashable
-import Verne.Types
 import Verne.Utils
-
-import Debug.Trace
 
 -- | Compile goes from ParsedCode to WiredCode
 
@@ -57,7 +47,7 @@ go typ (Name name) =
     in checkType typ actual $ pure $ Atom part
 
 -- Function call
-go typ (Syntax (Posi a' b' (Name name)) args) = do
+go typ (Syntax (Posi a' b' (Name name)) synArgs) = do
   -- In order to support Syntax as function we'll probably need to implement
   -- HM or at least have a routine to infer the type of the expression.
   -- But thats a luxury problem for now.
@@ -66,14 +56,15 @@ go typ (Syntax (Posi a' b' (Name name)) args) = do
   -- downwards. Which is probably most of what HM does.
   deref typ name $ \func -> do
     let funcSig = case func of Part {"type"=t} -> typeToArr t
-        nDiff = (length args + typeLength typ) - length funcSig
-
-    checkTooManyArgs nDiff args $ \args -> do
-      codeArgs <- sequence $ zipWith go funcSig args
-      let nargs = length args
+        nDiff = (length synArgs + typeLength typ) - length funcSig
+    checkTooManyArgs nDiff synArgs $ \synArgs -> do
+      codeArgs <- sequence $ zipWith go funcSig synArgs
+      let nargs = length synArgs
           actualType = typeFromArr (drop nargs funcSig)
-      checkType typ actualType $
-        pure $ Code (Posc a' b' (Atom func)) codeArgs
+          code = Code (Posc a' b' (Atom func)) codeArgs
+      case getNextArgument typ actualType of
+        Just t -> pure (addNeedsArgument t code)
+        Nothing -> checkType typ actualType (pure code)
 
 -- Position wrapper
 go typ (Posi a b code) = Posc a b <$> go typ code
@@ -98,3 +89,10 @@ checkTooManyArgs diff args act = do
      else
        let keep = length args - diff
         in TooManyArguments (drop keep args) <$> act (take keep args)
+
+addNeedsArgument :: Type -> Code -> Code
+addNeedsArgument typ (Code func args) =
+  let na b = Posc (b+1) infinity (NeedsArgument typ)
+   in case maybe func id (last args) of
+       Posc _ b _ -> Code func (snoc args (na b))
+
