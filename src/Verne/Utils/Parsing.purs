@@ -5,12 +5,12 @@ import Control.Alternative
 import Control.Plus
 
 import Data.Array ((..))
-import Data.Char (toCharCode, toString)
+import Data.Char (toCharCode)
 import Data.Either
-import Data.Foldable (Foldable, foldMap, elem, notElem)
+import Data.Foldable (foldMap, elem, notElem)
 import Data.Maybe
 import Data.List (List(..))
-import qualified Data.String as S
+import Data.String as S
 
 import Prelude
 
@@ -26,6 +26,8 @@ type Pos = Int
 -- | This allows us to avoid repeatedly finding substrings
 -- | every time we match a character.
 type PosString = { str :: String, pos :: Pos }
+
+type Success a b = (a -> PosString -> b)
 
 -- | The type of parsing errors.
 data ParseError = ParseError String
@@ -50,9 +52,9 @@ instance functorParser :: Functor Parser where
     unParser p s fc (\a s' -> sc (f a) s'))
 
 instance applyParser :: Apply Parser where
-  apply f x = Parser (\s fc sc ->
-    unParser f s fc (\f' s' ->
-      unParser x s' fc (\x' s'' -> sc (f' x') s'')))
+  apply (Parser p1) (Parser p2) = Parser \s fc sc ->
+    p1 s fc \f s' ->
+      p2 s' fc \a -> sc (f a)
 
 instance applicativeParser :: Applicative Parser where
   pure a = Parser (\s _ sc -> sc a s)
@@ -75,71 +77,82 @@ instance monadParser :: Monad Parser
 
 -- | Fail with the specified message.
 fail :: forall a. String -> Parser a
-fail msg = Parser (\{ pos = pos } fc _ -> fc pos (ParseError msg))
+fail msg = Parser pp
+  where
+    pp :: forall a r. PosString -> (Pos -> ParseError -> r) -> (a -> PosString -> r) -> r
+    pp { pos : pos } fc _ = fc pos (ParseError msg)
 
 -- | Match zero or more times.
 many :: forall a. Parser a -> Parser (List a)
-many p = many1 p <|> return Nil
+many p = many1 p <|> pure Nil
 
 -- | Match one or more times.
 many1 :: forall a. Parser a -> Parser (List a)
 many1 p = do
   a <- p
   as <- many p
-  return (Cons a as)
+  pure (Cons a as)
 
 -- | Provide an error message in case of failure.
-(<?>) :: forall a. Parser a -> String -> Parser a
-(<?>) p msg = p <|> fail msg
+orError :: forall a. Parser a -> String -> Parser a
+orError p msg = p <|> fail msg
+infix 5 orError as <?>
 
 -- | Take the fixed point of a parser function. This function is sometimes useful when building recursive parsers.
 fix :: forall a. (Parser a -> Parser a) -> Parser a
-fix f = Parser (\s fc sc -> unParser (f (fix f)) s fc sc)
+fix f = Parser (\str fc sc -> unParser (f (fix f)) str fc sc)
 
 -- | In case of error, the default behavior is to backtrack if no input was consumed.
 -- |
 -- | `try p` backtracks even if input was consumed.
 try :: forall a. Parser a -> Parser a
-try p = Parser (\(s@{ pos = pos }) fc sc -> unParser p s (\_ -> fc pos) sc)
+try p = Parser pp
+  where
+    pp :: forall r. PosString -> (Pos -> ParseError -> r) -> (a -> PosString -> r) -> r
+    pp s fc = (unParser p) s (\_ -> fc (getPos s))
+    getPos {pos:pos} = pos
 
 -- | Match a character satisfying the given predicate.
 satisfy :: (Char -> Boolean) -> Parser Char
 satisfy f = try do
   c <- anyChar
   if f c
-     then return c
-     else fail $ "Character " <> toString c <> " did not satisfy predicate"
+     then pure c
+     else fail $ "Character " <> S.singleton c <> " did not satisfy predicate"
 
 -- | Match the specified character.
 char :: Char -> Parser Char
-char c = satisfy (== c) <?> "Could not match character " <> toString c
+char c = satisfy (\s -> s == c) <?> ("Could not match character " <> S.singleton c)
 
 -- | Match the end of the file.
 eof :: Parser Unit
-eof = Parser (\s fc sc -> case s of
-  { str = str, pos = i } | i < S.length str -> fc i (ParseError "Expected EOF")
-  _ -> sc unit s)
+eof = Parser pp
+  where
+    pp :: forall r. PosString -> (Pos -> ParseError -> r) -> (Unit -> PosString -> r) -> r
+    pp s fc sc = case s of
+      { str : str, pos : i } | i < S.length str -> fc i (ParseError "Expected EOF")
+      _ -> sc unit s
 
 -- | Match any character.
 anyChar :: Parser Char
-anyChar = Parser (\s fc sc -> case s of
-  { str = str, pos = i } -> case S.charAt i str of
+anyChar = Parser \s fc sc -> case s of
+  { str : str, pos : i } -> case S.charAt i str of
     Just chr -> sc chr { str: str, pos: i + 1 }
-    Nothing -> fc i (ParseError "Unexpected EOF"))
+    Nothing -> fc i (ParseError "Unexpected EOF")
 
 -- | Match any digit.
 anyDigit :: Parser Char
 anyDigit = try do
   c <- anyChar
   if c >= '0' && c <= '9'
-     then return c
-     else fail $ "Character " <> toString c <> " is not a digit"
+     then pure c
+     else fail $ "Character " <> S.singleton c <> " is not a digit"
 
 -- | Match many whitespace characters.
 whiteSpace :: Parser String
 whiteSpace = do
   cs <- many (satisfy \ c -> c == '\n' || c == '\r' || c == ' ' || c == '\t')
-  return (foldMap toString cs)
+  pure (foldMap S.singleton cs)
 
 -- | Skip many whitespace characters.
 skipSpaces :: Parser Unit
@@ -150,16 +163,16 @@ lowerCaseChar :: Parser Char
 lowerCaseChar = do
   c <- anyChar
   if toCharCode c `elem` (97 .. 122)
-     then return c
-     else fail $ "Expected a lower case character but found '" <> toString c <> "'"
+     then pure c
+     else fail $ "Expected a lower case character but found '" <> S.singleton c <> "'"
 
 -- | Match any upper case character.
 upperCaseChar :: Parser Char
 upperCaseChar = do
   c <- anyChar
   if toCharCode c `elem` (65 .. 90)
-     then return c
-     else fail $ "Expected an upper case character but found '" <> toString c <> "'"
+     then pure c
+     else fail $ "Expected an upper case character but found '" <> S.singleton c <> "'"
 
 -- | Match a letter or a number.
 alphaNum :: Parser Char

@@ -85,7 +85,7 @@ getCompletion caret = go
   go :: Code -> Maybe Code
   go c@(Posc a b (Code h args)) =
     inside a b $ head (mapMaybe go (h:args))
-  go c@(Posc a b (Atom (Part {autocomplete=Just _}))) =
+  go c@(Posc a b (Atom (Part {autocomplete:Just _}))) =
     inside a b $ Just c
   go c@(Posc a b (Undefined _ _)) =
     inside a b $ Just c

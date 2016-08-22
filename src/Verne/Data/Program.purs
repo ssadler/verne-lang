@@ -13,7 +13,7 @@ import Data.Array (reverse, take)
 import Data.List (List(..), filter, fromList)
 import Data.Foreign
 import Data.Maybe
-import qualified Data.String (length, take, fromCharArray) as S
+import Data.String (length, take, fromCharArray) as S
 import Data.StrMap (StrMap(..), foldMap)
 import Data.StrMap (empty, insert, lookup) as SM
 import Data.Tuple (Tuple(..))

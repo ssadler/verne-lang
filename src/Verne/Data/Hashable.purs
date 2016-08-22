@@ -1,6 +1,6 @@
 module Verne.Data.Hashable
   ( Hash(..)
-  , Hashable
+  , class Hashable
   , hash
   ) where
 

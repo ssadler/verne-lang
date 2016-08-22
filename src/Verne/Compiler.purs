@@ -33,7 +33,7 @@ go typ@(TCon "String") (Str str) =
 go typ@(TCon t1) (Str str) =
   deref typ t1 $ \part ->
     case part of
-      Part {"type"=Type (TCon "String") (TCon t2)} ->
+      Part {"type":Type (TCon "String") (TCon t2)} ->
         -- TODO: Will produce confusing error if type fails
         checkType typ (TCon t2) $
           let strPart = valuePart (TCon "String") str
@@ -43,7 +43,7 @@ go typ@(TCon t1) (Str str) =
 -- Name lookup
 go typ (Name name) =
   deref typ name $ \part ->
-    let actual = case part of Part {"type"=t} -> t
+    let actual = case part of Part {"type":t} -> t
     in checkType typ actual $ pure $ Atom part
 
 -- Function call
@@ -55,7 +55,7 @@ go typ (Syntax (Posi a' b' (Name name)) synArgs) = do
   -- and unification functions. That way, we can propagate upwards and
   -- downwards. Which is probably most of what HM does.
   deref typ name $ \func -> do
-    let funcSig = case func of Part {"type"=t} -> typeToArr t
+    let funcSig = case func of Part {"type":t} -> typeToArr t
         nDiff = (length synArgs + typeLength typ) - length funcSig
     checkTooManyArgs nDiff synArgs $ \synArgs -> do
       codeArgs <- sequence $ zipWith go funcSig synArgs

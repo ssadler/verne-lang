@@ -19,7 +19,7 @@ import Verne.Utils.Parsing
 type ParseFail = {pos::Int, error::ParseError}
 
 getPos :: Parser Int
-getPos = Parser (\(s@{ pos = pos }) _ sc -> sc pos s)
+getPos = Parser (\(s@{ pos : pos }) _ sc -> sc pos s)
 
 parse :: String -> Either ParseFail Syntax
 parse input =
@@ -63,6 +63,6 @@ parseString :: Parser Syntax
 parseString = do
   a <- getPos
   char '"'
-  str <- many $ satisfy (/='"')
+  str <- many $ satisfy (\x -> x /= '"')
   b <- (eof *> pure infinity) <|> (char '"' *> getPos)
   pure $ Posi a b $ Str $ fromCharArray $ fromList $ str
