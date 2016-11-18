@@ -9,6 +9,9 @@
     "graphdeps": "scripts/graphdeps.py | dot -Tsvg > output/deps.svg",
     "warnings": "scripts/warnings.sh"
   },
+  "dependencies": {
+    "crypto-js": "^3.1.6"
+  },
   "author": "",
   "license": "ISC"
 }

@@ -3,6 +3,8 @@
 
 // module Verne.Utils
 
+var cryptoJs = require('crypto-js');
+
 exports.infinity = Infinity;
 
 exports.dump = function(v) { return v + "" };
@@ -21,7 +23,6 @@ exports.freeze = function(v) { module.require('icepick').freeze(v); }
  * Hash an array in a non collidable way
  */
 exports.hashMany = function(args) {
-    var cryptoJs = require('crypto-js');
     var s = cryptoJs.SHA256();
     s.extend(arguments.length.toString());
     args.forEach(function(part) { s.extend(part) });

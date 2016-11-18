@@ -29,7 +29,6 @@ compile = go (TCon "Effect")
 go :: Type -> Syntax -> Compile Code
 go typ@(TCon "String") (Str str) =
   pure $ Atom $ valuePart typ str
-go _ _ = unsafeCrashWith "go: unhandled"
 
 -- Overloaded String
 go typ@(TCon t1) (Str str) =
@@ -70,6 +69,9 @@ go typ (Syntax (Posi a' b' (Name name)) synArgs) = do
 
 -- Position wrapper
 go typ (Posi a b code) = Posc a b <$> go typ code
+
+-- Unhandled case
+go _ _ = unsafeCrashWith "Verne.Compiler.go: unhandled"
 
 -- | Dereference a name then continue
 deref :: Type -> String -> (Part -> Compile Code) -> Compile Code
