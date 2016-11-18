@@ -10,7 +10,7 @@ import Data.Either
 import Data.Foreign
 import Data.Foreign.Class
 import Data.String (fromCharArray)
-import Data.List (List(..), fromList)
+import Data.List (List(..), toUnfoldable)
 
 import Prelude
 
@@ -63,7 +63,7 @@ instance typeIsForeign :: IsForeign Type where
 
 instance typeShow :: Show Type where
   show (TCon str) = str
-  show (Type t1 t2) = show t1 ++ " -> " ++ show t2
+  show (Type t1 t2) = show t1 <> " -> " <> show t2
   show (TNil) = "()"
 
 parseType :: Parser Type
@@ -75,5 +75,5 @@ parseType = do
   where
   rec = fix $ \_ -> try (char '-' *> char '>') *> parseType
   parseCon = toStr <$> (Cons <$> upperCaseChar <*> many alphaNum)
-  toStr = fromCharArray <<< fromList
+  toStr = fromCharArray <<< toUnfoldable
 

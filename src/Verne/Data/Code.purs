@@ -69,15 +69,15 @@ type Error = String
 codeErrors :: Code -> Array Code
 codeErrors (Posc a b (Atom _)) = []
 codeErrors (Posc a b (Code head args)) =
-  codeErrors head ++ (args >>= codeErrors)
+  codeErrors head <> (args >>= codeErrors)
 codeErrors c@(Posc a b code) = [c]
 
 showCodeError :: Code -> String
-showCodeError (Undefined str _) = "name '" ++ str ++ "' is undefined"
+showCodeError (Undefined str _) = "name '" <> str <> "' is undefined"
 showCodeError (TypeError t1 t2) =
-  "expecting type " ++ show t1 ++ " but found " ++ show t2
+  "expecting type " <> show t1 <> " but found " <> show t2
 showCodeError (Posc a b code) =
-  "at " ++ show a ++ ":" ++ show b ++ ": " ++ showCodeError code
+  "at " <> show a <> ":" <> show b <> ": " <> showCodeError code
 
 getCompletion :: Int -> Code -> Maybe Code
 getCompletion caret = go
@@ -103,7 +103,7 @@ data Syntax = Syntax Syntax (Array Syntax)
 
 instance showSyntax :: Show Syntax where
   show (Syntax func args) =
-    "(Syntax " ++ show func ++ " " ++ joinWith " " (show <$> args) ++ ")"
+    "(Syntax " <> show func <> " " <> joinWith " " (show <$> args) <> ")"
   show (Name name) = name
-  show (Str s) = "\"" ++ s ++ "\""
+  show (Str s) = "\"" <> s <> "\""
   show (Posi a b syn) = joinWith " " [show a, show b, show syn]

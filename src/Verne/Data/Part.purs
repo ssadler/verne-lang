@@ -41,7 +41,7 @@ instance partIsForeign :: IsForeign Part where
       n <- readProp "name" fo
       t <- readProp "type" fo
       e <- readProp "exec" fo
-      auto <- runNullOrUndefined <$> readProp "autocomplete" fo
+      auto <- unNullOrUndefined <$> readProp "autocomplete" fo
       pure $ Part {id:"", name:n, "type":t, exec:e, autocomplete:auto, args:[]}
 
 -- instance showPart :: Show Part where
@@ -90,3 +90,4 @@ unsafeCurryPart (Part c1@{"type":Type _ t}) arg =
        , autocomplete: c1.autocomplete
        , args: snoc c1.args arg
        }
+unsafeCurryPart _ _ = nullPart  -- TODO
