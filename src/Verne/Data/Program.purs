@@ -10,7 +10,7 @@ module Verne.Data.Program
 import Control.Monad.State
 
 import Data.Array (reverse, take)
-import Data.List (List(..), filter, fromList)
+import Data.List (List(..), filter)
 import Data.Foreign
 import Data.Maybe
 import Data.String (length, take, fromCharArray) as S

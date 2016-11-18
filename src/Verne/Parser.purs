@@ -6,7 +6,7 @@ module Verne.Parser
 import Control.Alt
 import Control.Apply
 
-import Data.List (List(..), fromList)
+import Data.List (List(..), toUnfoldable)
 import Data.Either
 import Data.String (fromCharArray)
 
@@ -43,7 +43,7 @@ parseParens = fix $ \_ -> do
   pure $ Posi a b $ Syntax head args
 
 parseArgs :: Parser (Array Syntax)
-parseArgs = fix $ \_ -> fromList <$> many (parseArg <* skipSpaces)
+parseArgs = fix $ \_ -> toUnfoldable <$> many (parseArg <* skipSpaces)
 
 parseArg :: Parser Syntax
 parseArg = fix $ \_ -> parseParens <|> parseName <|> parseString
@@ -53,7 +53,7 @@ parseName = do
   a <- getPos
   chars <- Cons <$> lowerCaseChar <*> many myAlphaNum
   b <- getPos <* skipSpaces
-  pure $ Posi a b $ Name $ fromCharArray $ fromList chars
+  pure $ Posi a b $ Name $ fromCharArray $ toUnfoldable chars
   where
   myAlphaNum = satisfy $ \c -> c >= 'a' && c <= 'z'
                             || c >= 'A' && c <= 'Z'
@@ -65,4 +65,4 @@ parseString = do
   char '"'
   str <- many $ satisfy (\x -> x /= '"')
   b <- (eof *> pure infinity) <|> (char '"' *> getPos)
-  pure $ Posi a b $ Str $ fromCharArray $ fromList $ str
+  pure $ Posi a b $ Str $ fromCharArray $ toUnfoldable $ str

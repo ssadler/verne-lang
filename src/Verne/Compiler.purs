@@ -9,6 +9,7 @@ import Data.Array ( foldM, drop, head, length, last
 import Data.Maybe
 import Data.Traversable
 
+import Partial.Unsafe (unsafeCrashWith)
 import Prelude
 
 import Verne.Data.Code
@@ -28,6 +29,7 @@ compile = go (TCon "Effect")
 go :: Type -> Syntax -> Compile Code
 go typ@(TCon "String") (Str str) =
   pure $ Atom $ valuePart typ str
+go _ _ = unsafeCrashWith "go: unhandled"
 
 -- Overloaded String
 go typ@(TCon t1) (Str str) =
@@ -94,5 +96,6 @@ addNeedsArgument :: Type -> Code -> Code
 addNeedsArgument typ (Code func args) =
   let na b = Posc (b+1) infinity (NeedsArgument typ)
    in case maybe func id (last args) of
-       Posc _ b _ -> Code func (snoc args (na b))
-
+           Posc _ b _ -> Code func (snoc args (na b))
+           _ -> unsafeCrashWith "addNeedsArgument.inner: unhandled"
+addNeedsArgument _ _ = unsafeCrashWith "addNeedsArgument: unhandled"

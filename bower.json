@@ -24,14 +24,15 @@
     "crypto-js": "^3.1.6",
     "purescript-aff": "^1.1.0",
     "purescript-random": "^1.0.0",
-    "purescript-quickcheck": "^1.0.0"
+    "purescript-quickcheck": "^1.0.0",
+    "purescript-partial": "^1.1.2"
   },
   "_dependencies": {
     "icepick": "git://github.com/aearly/icepick.git#~1.1.0",
     "purescript-test-unit": "~4.1.0"
   },
   "devDependencies": {
-    "purescript-psci-support": "^1.0.0",
+    "purescript-psci-support": "1.0.0",
     "purescript-test-unit": "^9.0.0"
   },
   "resolutions": {
@@ -56,6 +57,7 @@
     "purescript-aff": "^1.1.0",
     "purescript-random": "^1.0.0",
     "purescript-quickcheck": "^1.0.0",
-    "purescript-test-unit": "^9.0.0"
+    "purescript-test-unit": "^9.0.0",
+    "purescript-psci-support": "1.0.0"
   }
 }

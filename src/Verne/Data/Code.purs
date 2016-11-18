@@ -16,6 +16,7 @@ import Data.Maybe
 import Data.String (joinWith)
 import Data.Traversable
 
+import Partial.Unsafe (unsafeCrashWith)
 import Prelude
 
 import Verne.Data.Type
@@ -71,6 +72,7 @@ codeErrors (Posc a b (Atom _)) = []
 codeErrors (Posc a b (Code head args)) =
   codeErrors head <> (args >>= codeErrors)
 codeErrors c@(Posc a b code) = [c]
+codeErrors _ = unsafeCrashWith "codeErrors: unhandled type"
 
 showCodeError :: Code -> String
 showCodeError (Undefined str _) = "name '" <> str <> "' is undefined"
@@ -78,6 +80,8 @@ showCodeError (TypeError t1 t2) =
   "expecting type " <> show t1 <> " but found " <> show t2
 showCodeError (Posc a b code) =
   "at " <> show a <> ":" <> show b <> ": " <> showCodeError code
+showCodeError _ = unsafeCrashWith "showCodeError unhandled type"
+
 
 getCompletion :: Int -> Code -> Maybe Code
 getCompletion caret = go
