@@ -8,7 +8,7 @@ foreign import infinity :: Int
 
 foreign import dump :: forall a. a -> String
 
-foreign import compactShow :: String -> String
+foreign import unqualifyShow :: String -> String
 
 foreign import isSame :: forall a. a -> a -> Boolean
 

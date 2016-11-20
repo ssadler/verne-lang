@@ -9,6 +9,7 @@ import Control.Apply
 import Data.List (List(..), toUnfoldable)
 import Data.Either
 import Data.String (fromCharArray)
+import Data.Tuple
 
 import Prelude
 
@@ -16,7 +17,7 @@ import Verne.Data.Code (Syntax(..))
 import Verne.Utils
 import Verne.Utils.Parsing
 
-type ParseFail = {pos::Int, error::ParseError}
+type ParseFail = Tuple Int ParseError
 
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos : pos }) _ sc -> sc pos s)
@@ -27,7 +28,7 @@ parse input =
   where
   parser = parseSyntax <* eof
   onSuccess ast _ = Right ast
-  onErr pos error = Left {pos,error}
+  onErr pos error = Left (Tuple pos error)
 
 parseSyntax :: Parser Syntax
 parseSyntax = 

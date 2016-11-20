@@ -3,18 +3,17 @@
 
 // module Verne.Exec
 
-var Left = PS['Data.Either'].Left;
-var Right = PS['Data.Either'].Right;
-
 var runPartInner = function(part, moreargs) {
     var args = part.args.map(runPartInner).concat(moreargs || []);
     return part.exec.apply(part, args);
 }
 
-exports.runPart = function(part, moreargs) {
+var either = require('Data.Either');
+
+exports.runPart = function(left, right, part, moreargs) {
     try {
-        return new Right(runPartInner(part, moreargs));
+        return new either.Right(runPartInner(part, moreargs));
     } catch (e) {
-        return new Left(e);
+        return new either.Left(e);
     }
 };

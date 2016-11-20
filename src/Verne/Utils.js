@@ -9,7 +9,9 @@ exports.infinity = Infinity;
 
 exports.dump = function(v) { return v + "" };
 
-exports.compactShow = function(s) { return s.replace(/[A-Z][a-zA-Z0-9_]+\./g, ''); }
+exports.unqualifyShow = function(s) {
+    return s.replace(/[\w\.]*\.(\w+)/g, '$1');
+};
 
 exports.isSame = function(a,b) { return a === b }
 

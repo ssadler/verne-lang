@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "purescript-psci-support": "1.0.0",
-    "purescript-test-unit": "^9.0.0",
+    "purescript-test-unit": "9.1.0",
     "purescript-assert": "^2.0.0"
   },
   "resolutions": {

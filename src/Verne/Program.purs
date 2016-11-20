@@ -1,5 +1,8 @@
 module Verne.Program
-  ( program
+  ( module Verne.Data.Program
+  , addPart
+  , newProgramState
+  , program
   ) where
 
 import Control.Monad.State
@@ -42,7 +45,7 @@ program = make { newProgramState
                , runState
                , showCodeError
                , codeErrors
-               , getCompletion
+               , getCodeAtPosition
                , getNameCompletions
                }
 

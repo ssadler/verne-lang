@@ -3,17 +3,17 @@
 
 // module Verne.Program
 
+var Either = require('Data.Either');
+var DataCode = require('Verne.Data.Code');
 
 exports.make = function(ps) {
-    var DC = PS['Verne.Data.Code'];
-    var DT = PS['Verne.Data.Type'];
     var m = function(val) { return val.value0; }
     var e = function(val) {
-        return val instanceof PS['Data.Either'].Left ? 
+        return val instanceof either.Left ? 
             {left: val.value0} : {right: val.value0};
     };
     var ex = function(val) {
-        if (val instanceof PS['Data.Either'].Left) {
+        if (val instanceof either.Left) {
             throw val.value0;
         } else {
             return val.value0;
@@ -32,19 +32,21 @@ exports.make = function(ps) {
             return ps.execute(exe);
         },
         getCompletion: function(caret) {
-            var code = m(ps.getCompletion(caret)(this.code));
+            var code = m(ps.getCodeAtPosition(caret)(this.code));
             if (!code) return;
             var completion = {
                 a: code.value0,
                 b: code.value1
             };
             code = code.value2;
-            if (code instanceof DC.Undefined) {
+            console.log(code.constructor.name);
+            if (code instanceof DataCode.Undefined) {
+                console.log('its undefined');
                 var gnc = ps.getNameCompletions(code.value0)(code.value1)
                 completion.names = this.program.run(gnc);
-            } else if (code instanceof DC.Atom) {
+            } else if (code instanceof DataCode.Atom) {
                 completion.part = code.value0;
-            } else if (code instanceof DC.NeedsArgument) {
+            } else if (code instanceof DataCode.NeedsArgument) {
                 var gnc = ps.getNameCompletions("")(code.value0)
                 completion.names = this.program.run(gnc);
             } else {

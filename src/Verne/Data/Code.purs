@@ -3,7 +3,7 @@ module Verne.Data.Code
   , Executable(..)
   , Syntax(..)
   , codeErrors
-  , getCompletion
+  , getCodeAtPosition
   , showCodeError
   , toExecutable
   ) where
@@ -12,6 +12,7 @@ import Control.Monad.Except
 
 import Data.Array
 import Data.Either
+import Data.Generic
 import Data.Maybe
 import Data.String (joinWith)
 import Data.Traversable
@@ -21,6 +22,7 @@ import Prelude
 
 import Verne.Data.Type
 import Verne.Data.Part
+import Verne.Utils (unqualifyShow)
 
 -- | IR Concept
 -- 
@@ -83,8 +85,8 @@ showCodeError (Posc a b code) =
 showCodeError _ = unsafeCrashWith "showCodeError unhandled type"
 
 
-getCompletion :: Int -> Code -> Maybe Code
-getCompletion caret = go
+getCodeAtPosition :: Int -> Code -> Maybe Code
+getCodeAtPosition pos = go
   where
   go :: Code -> Maybe Code
   go c@(Posc a b (Code h args)) =
@@ -97,7 +99,7 @@ getCompletion caret = go
     inside a b $ Just c
   go _ = Nothing
   inside a b act =
-    if caret >= a && caret <= b then act else Nothing
+    if pos >= a && pos <= b then act else Nothing
 
 -- | Syntax Tree
 data Syntax = Syntax Syntax (Array Syntax)
@@ -105,9 +107,14 @@ data Syntax = Syntax Syntax (Array Syntax)
             | Str String
             | Posi Int Int Syntax
 
-instance showSyntax :: Show Syntax where
-  show (Syntax func args) =
-    "(Syntax " <> show func <> " " <> joinWith " " (show <$> args) <> ")"
-  show (Name name) = name
-  show (Str s) = "\"" <> s <> "\""
-  show (Posi a b syn) = joinWith " " [show a, show b, show syn]
+-- instance showSyntax :: Show Syntax where
+--   show (Syntax func args) =
+--     "(Syntax " <> show func <> " " <> joinWith " " (show <$> args) <> ")"
+--   show (Name name) = name
+--   show (Str s) = "\"" <> s <> "\""
+--   show (Posi a b syn) = joinWith " " [show a, show b, show syn]
+
+derive instance genericSyntax :: Generic Syntax
+instance eqSyntax :: Eq Syntax where eq = gEq
+instance showSyntax :: Show Syntax
+  where show = unqualifyShow <<< gShow
