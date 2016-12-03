@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bundle": "pulp build --modules Verne.Program --to index.js && echo 'module.exports = PS;' >> index.js",
+    "bundle": "pulp build --modules Verne.Api --to index.js && echo 'module.exports = PS;' >> index.js",
     "graphdeps": "scripts/graphdeps.py | dot -Tsvg > output/deps.svg",
     "warnings": "scripts/warnings.sh"
   },

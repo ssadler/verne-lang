@@ -1,7 +1,7 @@
 /* global exports */
 "use strict";
 
-// module Verne.Program
+// module Verne.Api
 
 var Either = require('Data.Either');
 var DataCode = require('Verne.Data.Code');
@@ -49,6 +49,7 @@ exports.make = function(ps) {
             } else if (code instanceof DataCode.NeedsArgument) {
                 var gnc = ps.getNameCompletions("")(code.value0)
                 completion.names = this.program.run(gnc);
+                console.log(names);
             } else {
                 console.log('unrecognized completion', code);
                 return;
@@ -67,7 +68,7 @@ exports.make = function(ps) {
             return tup.value0;
         },
         addPart: function(object) {
-            return ex(this.run(ps.addPart(object)));
+            return ex(this.run(ps.importPart(object)));
         },
         compile: function(str) {
             return new Code(this, str);

@@ -107,14 +107,6 @@ data Syntax = Syntax Syntax (Array Syntax)
             | Str String
             | Posi Int Int Syntax
 
--- instance showSyntax :: Show Syntax where
---   show (Syntax func args) =
---     "(Syntax " <> show func <> " " <> joinWith " " (show <$> args) <> ")"
---   show (Name name) = name
---   show (Str s) = "\"" <> s <> "\""
---   show (Posi a b syn) = joinWith " " [show a, show b, show syn]
-
 derive instance genericSyntax :: Generic Syntax
 instance eqSyntax :: Eq Syntax where eq = gEq
-instance showSyntax :: Show Syntax
-  where show = unqualifyShow <<< gShow
+instance showSyntax :: Show Syntax where show = unqualifyShow <<< gShow

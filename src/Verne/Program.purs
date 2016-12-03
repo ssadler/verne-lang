@@ -2,14 +2,11 @@ module Verne.Program
   ( module Verne.Data.Program
   , addPart
   , newProgramState
-  , program
   ) where
 
 import Control.Monad.State
 
 import Data.Either
-import Data.Foreign
-import Data.Foreign.Class
 
 import Prelude
 
@@ -26,27 +23,6 @@ newProgramState = Ps { globals: empty
                      , modules: empty
                      }
 
-addPart :: Foreign -> Program (Either ForeignError Unit)
-addPart fo =
-  case read fo of
-       Right com -> Right <$> mod com
-       Left fe   -> pure (Left fe)
-  where
-  mod c@(Part {name}) = modify (\(Ps s@{globals}) ->
+addPart :: Part -> Program Unit
+addPart c@(Part {name}) = modify (\(Ps s@{globals}) ->
     Ps $ s { globals = insert name c globals })
-
-program :: Foreign
-program = make { newProgramState
-               , addPart
-               , parse
-               , compile
-               , toExecutable
-               , execute
-               , runState
-               , showCodeError
-               , codeErrors
-               , getCodeAtPosition
-               , getNameCompletions
-               }
-
-foreign import make :: forall a. {| a} -> Foreign

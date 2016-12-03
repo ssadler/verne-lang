@@ -20,3 +20,9 @@ exports.reloadPart = {
     }
 };
 
+exports.autocompletePart = {
+    name: 'autoc',
+    type: 'Effect',
+    exec: function() {},
+    autocomplete: function() {}
+};
