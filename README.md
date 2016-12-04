@@ -26,13 +26,7 @@ The Verne Language has a component system, in which components are analgous to o
 
 This is akin to a tadpole's transition to becoming a frog; it needs to have a surface at water level to crawl up onto.
 
-
-
-
-
-
-
-Features:
+### Features:
 
 * Simple, LISP-like syntax with extensible literals.
 * Powerful built-in and extensible autocomplete.
