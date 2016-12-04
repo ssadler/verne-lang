@@ -5,6 +5,7 @@ import Control.Monad.Except.Trans
 import Data.Either
 import Data.Foreign
 import Data.Function.Uncurried (Fn2, runFn2)
+import Data.Maybe
 import Data.Traversable
 
 import Partial.Unsafe (unsafeCrashWith)
@@ -28,3 +29,16 @@ execute (Executable code) = runExceptT (go code)
   go _ = unsafeCrashWith "Verne.Exec.go: unhandled"
 
 foreign import runPart :: Fn2 Part (Array Foreign) (Either Foreign Foreign)
+
+
+getCompletions :: Int -> Code -> Program {code :: Code, parts :: Array Part}
+getCompletions pos code = do
+  case getCodeAtPosition pos code of
+       Nothing -> pure {code, parts: []}
+       Just code -> do
+         parts <- case code of
+              Undefined name typ -> getNameCompletions name typ
+              NeedsArgument typ -> getNameCompletions "" typ
+              Atom part -> pure [part]
+              _ -> pure []
+         pure {code, parts}

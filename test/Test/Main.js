@@ -26,3 +26,5 @@ exports.autocompletePart = {
     exec: function() {},
     autocomplete: function() {}
 };
+
+exports.dump = function(v) { return function() { console.log(v); } }

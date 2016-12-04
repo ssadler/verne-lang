@@ -14,7 +14,6 @@ import Verne.Data.Code
 import Verne.Data.Program
 import Verne.Exec
 import Verne.Parser
-import Verne.Program
 
 
 importPart :: Foreign -> Program (Either ForeignError Unit)
@@ -23,6 +22,7 @@ importPart fo =
        Right com -> Right <$> addPart com
        Left fe   -> pure (Left fe)
 
+foreign import make :: forall a. {| a} -> Foreign
 
 program :: Foreign
 program = make { newProgramState
@@ -33,8 +33,7 @@ program = make { newProgramState
                , execute
                , showCodeError
                , codeErrors
+               , getCompletions
                , getCodeAtPosition
                , getNameCompletions
                }
-
-foreign import make :: forall a. {| a} -> Foreign

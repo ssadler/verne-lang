@@ -69,6 +69,7 @@ toExecutable code = runExcept (Executable <$> go code)
 
 type Error = String
 
+-- | Get errors from code
 codeErrors :: Code -> Array Code
 codeErrors (Posc a b (Atom _)) = []
 codeErrors (Posc a b (Code head args)) =
@@ -76,6 +77,8 @@ codeErrors (Posc a b (Code head args)) =
 codeErrors c@(Posc a b code) = [c]
 codeErrors _ = unsafeCrashWith "codeErrors: unhandled type"
 
+
+-- | Show a code error
 showCodeError :: Code -> String
 showCodeError (Undefined str _) = "name '" <> str <> "' is undefined"
 showCodeError (TypeError t1 t2) =
@@ -85,6 +88,7 @@ showCodeError (Posc a b code) =
 showCodeError _ = unsafeCrashWith "showCodeError unhandled type"
 
 
+-- Given an offset, finds the code object at that offset. 
 getCodeAtPosition :: Int -> Code -> Maybe Code
 getCodeAtPosition pos = go
   where

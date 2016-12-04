@@ -11,8 +11,10 @@ import Control.Monad.Trans
 import Data.Either
 import Data.Foreign
 import Data.Maybe
-import Verne.Program
+import Data.Tuple
+import Partial.Unsafe (unsafeCrashWith)
 import Verne.Data.Part
+import Verne.Data.Program
 import Verne.Data.Type
 import Verne.Compiler
 import Verne.Data.Code
@@ -20,24 +22,34 @@ import Verne.Parser
 import Verne.Utils
 
 
+foreign import dump :: forall a. a -> Eff (console :: CONSOLE) Unit
+
 
 main :: Eff (console :: CONSOLE) Unit
 main = do
-  let out = runState $ runExceptT testProg
+  let out = runState testProg newProgramState
+  dump out
   pure unit
 
 
-testProg :: ExceptT String Program Unit
+testProg :: Program Code
 testProg = do
-  lift $ addPart nullPart
-  lift $ addPart $ Part { id: "theAutocompleter"
-                        , name: ""
-                        , "type": TCon "Effect"
-                        , exec: toForeign (\_ -> "")
-                        , autocomplete: Just (toForeign (\_ -> ""))
-                        , args: []
-                        }
-  pure unit
+  addPart nullPart
+  addPart $ Part { id: "theAutocompleter"
+                 , name: ""
+                 , "type": TCon "Effect"
+                 , exec: toForeign (\_ -> "")
+                 , autocomplete: Just (toForeign (\_ -> ""))
+                 , args: []
+                 }
+  code <- compile $ unsafeParse "null"
+  pure code
+
+
+unsafeParse :: String -> Syntax
+unsafeParse str = case parse str of
+                       Left (Tuple _ msg) -> unsafeCrashWith msg
+                       Right syntax -> syntax
 
 
 --main :: Eff (console :: CONSOLE, assert :: ASSERT) Unit

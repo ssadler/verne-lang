@@ -17,7 +17,7 @@ import Verne.Data.Code (Syntax(..))
 import Verne.Utils
 import Verne.Utils.Parsing
 
-type ParseFail = Tuple Int ParseError
+type ParseFail = Tuple Int String
 
 getPos :: Parser Int
 getPos = Parser (\(s@{ pos : pos }) _ sc -> sc pos s)
@@ -28,7 +28,7 @@ parse input =
   where
   parser = parseSyntax <* eof
   onSuccess ast _ = Right ast
-  onErr pos error = Left (Tuple pos error)
+  onErr pos (ParseError error) = Left (Tuple pos error)
 
 parseSyntax :: Parser Syntax
 parseSyntax = 

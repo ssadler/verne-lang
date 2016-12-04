@@ -32,29 +32,8 @@ exports.make = function(ps) {
             return ps.execute(exe);
         },
         getCompletion: function(caret) {
-            var code = m(ps.getCodeAtPosition(caret)(this.code));
-            if (!code) return;
-            var completion = {
-                a: code.value0,
-                b: code.value1
-            };
-            code = code.value2;
-            console.log(code.constructor.name);
-            if (code instanceof DataCode.Undefined) {
-                console.log('its undefined');
-                var gnc = ps.getNameCompletions(code.value0)(code.value1)
-                completion.names = this.program.run(gnc);
-            } else if (code instanceof DataCode.Atom) {
-                completion.part = code.value0;
-            } else if (code instanceof DataCode.NeedsArgument) {
-                var gnc = ps.getNameCompletions("")(code.value0)
-                completion.names = this.program.run(gnc);
-                console.log(names);
-            } else {
-                console.log('unrecognized completion', code);
-                return;
-            }
-            return completion;
+            var go = ps.getCompletions(caret)(this.code);
+            return this.program.run(go);
         }
     }
     
