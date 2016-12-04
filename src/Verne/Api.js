@@ -19,7 +19,6 @@ exports.make = function(ps) {
             return val.value0;
         }
     };
-
     var Code = function(program, str) {
         this.program = program;
         this.str = str;

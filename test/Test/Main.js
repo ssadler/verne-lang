@@ -27,4 +27,7 @@ exports.autocompletePart = {
     autocomplete: function() {}
 };
 
-exports.dump = function(v) { return function() { console.log(v); } }
+exports.dump = function(v) {
+    const util = require('util')
+    console.log(util.inspect(v, {showHidden: false, depth: null}));
+}

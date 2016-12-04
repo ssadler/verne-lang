@@ -12,6 +12,7 @@ import Data.Foreign.Class
 import Data.String (fromCharArray)
 import Data.List (List(..), toUnfoldable)
 
+import Partial.Unsafe (unsafeCrashWith)
 import Prelude
 
 import Verne.Utils.Parsing
@@ -60,6 +61,11 @@ instance typeIsForeign :: IsForeign Type where
               unParser parseType {str, pos:0}
                 (\_ err -> Left $ JSONError $ show err)
                 (\typ _ -> Right typ))
+
+unsafeParseType :: String -> Type
+unsafeParseType str = unParser parseType {str, pos:0}
+                        (\_ err -> unsafeCrashWith (show err))
+                        (\typ _ -> typ)
 
 instance typeShow :: Show Type where
   show (TCon str) = str

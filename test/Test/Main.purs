@@ -13,37 +13,53 @@ import Data.Foreign
 import Data.Maybe
 import Data.Tuple
 import Partial.Unsafe (unsafeCrashWith)
+import Verne.Compiler
 import Verne.Data.Part
 import Verne.Data.Program
 import Verne.Data.Type
-import Verne.Compiler
 import Verne.Data.Code
+import Verne.Exec
 import Verne.Parser
-import Verne.Utils
 
 
-foreign import dump :: forall a. a -> Eff (console :: CONSOLE) Unit
+foreign import dump :: forall a. a -> Unit
 
 
 main :: Eff (console :: CONSOLE) Unit
 main = do
-  let out = runState testProg newProgramState
-  dump out
+  pure $ runState testProg newProgramState
   pure unit
 
 
-testProg :: Program Code
+
+testProg :: Program Unit
 testProg = do
   addPart nullPart
-  addPart $ Part { id: "theAutocompleter"
-                 , name: ""
-                 , "type": TCon "Effect"
+  addPart $ Part { id: ""
+                 , name: "thingToEffect"
+                 , "type": unsafeParseType "Thing -> Effect"
+                 , exec: toForeign (\_ -> "")
+                 , autocomplete: Nothing
+                 , args: []
+                 }
+  addPart $ Part { id: ""
+                 , name: "stringToThing"
+                 , "type": unsafeParseType "String -> Thing"
                  , exec: toForeign (\_ -> "")
                  , autocomplete: Just (toForeign (\_ -> ""))
                  , args: []
                  }
-  code <- compile $ unsafeParse "null"
-  pure code
+  addPart $ Part { id: ""
+                 , name: "thing"
+                 , "type": unsafeParseType "Thing"
+                 , exec: toForeign (\_ -> "")
+                 , autocomplete: Just (toForeign (\_ -> ""))
+                 , args: []
+                 }
+  code <- compile $ unsafeParse "thingToEffect "
+  --pure $ dump code
+  completion <- getCompletions 14 code
+  pure $ dump completion
 
 
 unsafeParse :: String -> Syntax
