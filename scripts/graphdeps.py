@@ -3,7 +3,7 @@
 import re
 import subprocess
 
-cmd = ['grep', '-r', '^import Verne', 'src/']
+cmd = ['grep', '--include', '*.purs', '-r', '^import Verne', 'src/']
 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 assert 0 == proc.wait()
 
